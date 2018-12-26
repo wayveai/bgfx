@@ -9,3 +9,5 @@
 *.lua eol=lf
 *.mk  eol=lf
 makefile eol=lf
+
+/examples export-ignore
