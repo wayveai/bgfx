@@ -10,5 +10,10 @@
 *.mk  eol=lf
 makefile eol=lf
 
+/examples/0* export-ignore
+/examples/1* export-ignore
+/examples/2* export-ignore
+/examples/3* export-ignore
+/examples/assets export-ignore
 /examples/assets export-ignore
 /examples/runtime export-ignore
