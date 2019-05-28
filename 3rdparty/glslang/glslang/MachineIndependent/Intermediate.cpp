@@ -410,7 +410,7 @@ TIntermTyped* TIntermediate::addBuiltInFunctionCall(const TSourceLoc& loc, TOper
 //
 // This is the safe way to change the operator on an aggregate, as it
 // does lots of error checking and fixing.  Especially for establishing
-// a function call's operation on it's set of parameters.  Sequences
+// a function call's operation on its set of parameters.  Sequences
 // of instructions are also aggregates, but they just directly set
 // their operator to EOpSequence.
 //
@@ -497,6 +497,58 @@ TIntermTyped* TIntermediate::createConversion(TBasicType convertTo, TIntermTyped
     TIntermUnary* newNode = nullptr;
 
     TOperator newOp = EOpNull;
+
+    // Certain explicit conversions are allowed conditionally
+    bool arithemeticInt8Enabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                  extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int8);
+#ifdef AMD_EXTENSIONS
+    bool arithemeticInt16Enabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                   extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int16) ||
+                                   extensionRequested(E_GL_AMD_gpu_shader_int16);
+
+    bool arithemeticFloat16Enabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                     extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_float16) ||
+                                     extensionRequested(E_GL_AMD_gpu_shader_half_float);
+#else
+    bool arithemeticInt16Enabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                   extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int16);
+
+    bool arithemeticFloat16Enabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                     extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_float16);
+#endif
+    bool convertToIntTypes = (convertTo == EbtInt8  || convertTo == EbtUint8  ||
+                              convertTo == EbtInt16 || convertTo == EbtUint16 ||
+                              convertTo == EbtInt   || convertTo == EbtUint   ||
+                              convertTo == EbtInt64 || convertTo == EbtUint64);
+
+    bool convertFromIntTypes = (node->getBasicType() == EbtInt8  || node->getBasicType() == EbtUint8  ||
+                                node->getBasicType() == EbtInt16 || node->getBasicType() == EbtUint16 ||
+                                node->getBasicType() == EbtInt   || node->getBasicType() == EbtUint   ||
+                                node->getBasicType() == EbtInt64 || node->getBasicType() == EbtUint64);
+
+    bool convertToFloatTypes = (convertTo == EbtFloat16 || convertTo == EbtFloat || convertTo == EbtDouble);
+
+    bool convertFromFloatTypes = (node->getBasicType() == EbtFloat16 ||
+                                  node->getBasicType() == EbtFloat ||
+                                  node->getBasicType() == EbtDouble);
+
+    if (! arithemeticInt8Enabled) {
+        if (((convertTo == EbtInt8 || convertTo == EbtUint8) && ! convertFromIntTypes) ||
+            ((node->getBasicType() == EbtInt8 || node->getBasicType() == EbtUint8) && ! convertToIntTypes))
+            return nullptr;
+    }
+
+    if (! arithemeticInt16Enabled) {
+        if (((convertTo == EbtInt16 || convertTo == EbtUint16) && ! convertFromIntTypes) ||
+            ((node->getBasicType() == EbtInt16 || node->getBasicType() == EbtUint16) && ! convertToIntTypes))
+            return nullptr;
+    }
+
+    if (! arithemeticFloat16Enabled) {
+        if ((convertTo == EbtFloat16 && ! convertFromFloatTypes) ||
+            (node->getBasicType() == EbtFloat16 && ! convertToFloatTypes))
+            return nullptr;
+    }
 
     switch (convertTo) {
     case EbtDouble:
@@ -725,6 +777,11 @@ TIntermTyped* TIntermediate::createConversion(TBasicType convertTo, TIntermTyped
     return newNode;
 }
 
+TIntermTyped* TIntermediate::addConversion(TBasicType convertTo, TIntermTyped* node) const
+{
+    return createConversion(convertTo, node);
+}
+
 // For converting a pair of operands to a binary operation to compatible
 // types with each other, relative to the operation in 'op'.
 // This does not cover assignment operations, which is asymmetric in that the
@@ -738,7 +795,7 @@ TIntermTyped* TIntermediate::createConversion(TBasicType convertTo, TIntermTyped
 // Returns the converted pair of nodes.
 // Returns <nullptr, nullptr> when there is no conversion.
 std::tuple<TIntermTyped*, TIntermTyped*>
-TIntermediate::addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* node1) const
+TIntermediate::addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* node1)
 {
     if (!isConversionAllowed(op, node0) || !isConversionAllowed(op, node1))
         return std::make_tuple(nullptr, nullptr);
@@ -751,6 +808,10 @@ TIntermediate::addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* no
         // If differing arrays, then no conversions.
         if (node0->getType().isArray() || node1->getType().isArray())
             return std::make_tuple(nullptr, nullptr);
+
+        // No implicit conversions for operations involving cooperative matrices
+        if (node0->getType().isCoopMat() || node1->getType().isCoopMat())
+            return std::make_tuple(node0, node1);
     }
 
     auto promoteTo = std::make_tuple(EbtNumTypes, EbtNumTypes);
@@ -867,7 +928,7 @@ TIntermediate::addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* no
 //
 // Return nullptr if a conversion can't be done.
 //
-TIntermTyped* TIntermediate::addConversion(TOperator op, const TType& type, TIntermTyped* node) const
+TIntermTyped* TIntermediate::addConversion(TOperator op, const TType& type, TIntermTyped* node)
 {
     if (!isConversionAllowed(op, node))
         return nullptr;
@@ -983,6 +1044,15 @@ TIntermTyped* TIntermediate::addConversion(TOperator op, const TType& type, TInt
 
     case EOpSequence:
     case EOpConstructStruct:
+    case EOpConstructCooperativeMatrix:
+
+        if (type.getBasicType() == EbtReference || node->getType().getBasicType() == EbtReference) {
+            // types must match to assign a reference
+            if (type == node->getType())
+                return node;
+            else
+                return nullptr;
+        }
 
         if (type.getBasicType() == node->getType().getBasicType())
             return node;
@@ -990,7 +1060,7 @@ TIntermTyped* TIntermediate::addConversion(TOperator op, const TType& type, TInt
         if (canImplicitlyPromote(node->getBasicType(), type.getBasicType(), op))
             promoteTo = type.getBasicType();
         else
-           return nullptr;
+            return nullptr;
         break;
 
     // For GLSL, there are no conversions needed; the shift amount just needs to be an
@@ -1839,6 +1909,9 @@ TOperator TIntermediate::mapTypeToConstructorOp(const TType& type) const
     if (type.getQualifier().nonUniform)
         return EOpConstructNonuniform;
 
+    if (type.isCoopMat())
+        return EOpConstructCooperativeMatrix;
+
     switch (type.getBasicType()) {
     case EbtStruct:
         op = EOpConstructStruct;
@@ -2130,6 +2203,9 @@ TOperator TIntermediate::mapTypeToConstructorOp(const TType& type) const
             default: break; // some compilers want this
             }
         }
+        break;
+    case EbtReference:
+        op = EOpConstructReference;
         break;
     default:
         break;
@@ -3306,6 +3382,40 @@ bool TIntermediate::promoteBinary(TIntermBinary& node)
 
     default:
         break;
+    }
+
+    if (left->getType().isCoopMat() || right->getType().isCoopMat()) {
+        if (left->getType().isCoopMat() && right->getType().isCoopMat() &&
+            *left->getType().getTypeParameters() != *right->getType().getTypeParameters()) {
+            return false;
+        }
+        switch (op) {
+        case EOpMul:
+        case EOpMulAssign:
+            if (left->getType().isCoopMat() && right->getType().isCoopMat()) {
+                return false;
+            }
+            if (op == EOpMulAssign && right->getType().isCoopMat()) {
+                return false;
+            }
+            node.setOp(op == EOpMulAssign ? EOpMatrixTimesScalarAssign : EOpMatrixTimesScalar);
+            if (right->getType().isCoopMat()) {
+                node.setType(right->getType());
+            }
+            return true;
+        case EOpAdd:
+        case EOpSub:
+        case EOpDiv:
+        case EOpAssign:
+            // These require both to be cooperative matrices
+            if (!left->getType().isCoopMat() || !right->getType().isCoopMat()) {
+                return false;
+            }
+            return true;
+        default:
+            break;
+        }
+        return false;
     }
 
     // Finish handling the case, for all ops, where both operands are scalars.
