@@ -364,6 +364,7 @@ namespace entry
 					| KeyReleaseMask
 					| PointerMotionMask
 					| StructureNotifyMask
+					| FocusChangeMask
 					;
 
 			m_windowAlloc.alloc();
@@ -503,6 +504,21 @@ namespace entry
 										);
 							}
 							break;
+
+						case FocusIn:
+							{
+								m_modifiers = 0;
+
+								const XFocusChangeEvent& xfocus = event.xfocus;
+								WindowHandle handle = findHandle(xfocus.window);
+								m_eventQueue.postSuspendEvent(handle, Suspend::DidResume);
+							};
+						case FocusOut:
+							{
+								const XFocusChangeEvent& xfocus = event.xfocus;
+								WindowHandle handle = findHandle(xfocus.window);
+								m_eventQueue.postSuspendEvent(handle, Suspend::DidSuspend);
+							};
 
 						case KeyPress:
 						case KeyRelease:
