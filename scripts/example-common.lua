@@ -1,5 +1,5 @@
 --
--- Copyright 2010-2019 Branimir Karadzic. All rights reserved.
+-- Copyright 2010-2020 Branimir Karadzic. All rights reserved.
 -- License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
 --
 
@@ -32,7 +32,6 @@ project ("example-common")
 		path.join(BGFX_DIR, "3rdparty/meshoptimizer/src/**.h"),
 		path.join(BGFX_DIR, "3rdparty/dear-imgui/**.cpp"),
 		path.join(BGFX_DIR, "3rdparty/dear-imgui/**.h"),
-		path.join(BGFX_DIR, "examples/common/**.cpp"),
 		path.join(BGFX_DIR, "examples/common/**.cpp"),
 		path.join(BGFX_DIR, "examples/common/**.h"),
 	}
@@ -78,12 +77,7 @@ project ("example-common")
 		}
 	end
 
-	configuration { "linux-steamlink" }
-		defines {
-			"EGL_API_FB",
-		}
-
-	configuration { "osx or ios* or tvos*" }
+	configuration { "osx* or ios* or tvos*" }
 		files {
 			path.join(BGFX_DIR, "examples/common/**.mm"),
 		}

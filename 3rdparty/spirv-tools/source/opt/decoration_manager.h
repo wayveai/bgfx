@@ -74,6 +74,12 @@ class DecorationManager {
   // instructions that apply the same decorations but to different IDs, still
   // count as being the same.
   bool HaveTheSameDecorations(uint32_t id1, uint32_t id2) const;
+
+  // Returns whether two IDs have the same decorations. Two SpvOpGroupDecorate
+  // instructions that apply the same decorations but to different IDs, still
+  // count as being the same.
+  bool HaveSubsetOfDecorations(uint32_t id1, uint32_t id2) const;
+
   // Returns whether the two decorations instructions are the same and are
   // applying the same decorations; unless |ignore_target| is false, the targets
   // to which they are applied to does not matter, except for the member part.
@@ -95,6 +101,13 @@ class DecorationManager {
   // terminated and this function returns false.
   bool WhileEachDecoration(uint32_t id, uint32_t decoration,
                            std::function<bool(const Instruction&)> f);
+
+  // |f| is run on each decoration instruction for |id| with decoration
+  // |decoration|. Processes all decoration which target |id| either directly or
+  // indirectly through decoration groups. If |f| returns true, iteration is
+  // terminated and this function returns true. Otherwise returns false.
+  bool FindDecoration(uint32_t id, uint32_t decoration,
+                      std::function<bool(const Instruction&)> f);
 
   // Clone all decorations from one id |from|.
   // The cloned decorations are assigned to the given id |to| and are

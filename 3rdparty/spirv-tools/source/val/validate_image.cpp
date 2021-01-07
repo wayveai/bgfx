@@ -1,4 +1,6 @@
 // Copyright (c) 2017 Google Inc.
+// Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights
+// reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,7 +35,7 @@ namespace {
 // Performs compile time check that all SpvImageOperandsXXX cases are handled in
 // this module. If SpvImageOperandsXXX list changes, this function will fail the
 // build.
-// For all other purposes this is a dummy function.
+// For all other purposes this is a placeholder function.
 bool CheckAllImageOperandsHandled() {
   SpvImageOperandsMask enum_val = SpvImageOperandsBiasMask;
 
@@ -149,6 +151,28 @@ bool IsExplicitLod(SpvOp opcode) {
   return false;
 }
 
+bool IsValidLodOperand(const ValidationState_t& _, SpvOp opcode) {
+  switch (opcode) {
+    case SpvOpImageRead:
+    case SpvOpImageWrite:
+    case SpvOpImageSparseRead:
+      return _.HasCapability(SpvCapabilityImageReadWriteLodAMD);
+    default:
+      return IsExplicitLod(opcode);
+  }
+}
+
+bool IsValidGatherLodBiasAMD(const ValidationState_t& _, SpvOp opcode) {
+  switch (opcode) {
+    case SpvOpImageGather:
+    case SpvOpImageSparseGather:
+      return _.HasCapability(SpvCapabilityImageGatherBiasLodAMD);
+    default:
+      break;
+  }
+  return false;
+}
+
 // Returns true if the opcode is a Image instruction which applies
 // homogenous projection to the coordinates.
 bool IsProj(SpvOp opcode) {
@@ -248,11 +272,13 @@ spv_result_t ValidateImageOperands(ValidationState_t& _,
 
   const bool is_implicit_lod = IsImplicitLod(opcode);
   const bool is_explicit_lod = IsExplicitLod(opcode);
+  const bool is_valid_lod_operand = IsValidLodOperand(_, opcode);
+  const bool is_valid_gather_lod_bias_amd = IsValidGatherLodBiasAMD(_, opcode);
 
   // The checks should be done in the order of definition of OperandImage.
 
   if (mask & SpvImageOperandsBiasMask) {
-    if (!is_implicit_lod) {
+    if (!is_implicit_lod && !is_valid_gather_lod_bias_amd) {
       return _.diag(SPV_ERROR_INVALID_DATA, inst)
              << "Image Operand Bias can only be used with ImplicitLod opcodes";
     }
@@ -277,8 +303,8 @@ spv_result_t ValidateImageOperands(ValidationState_t& _,
   }
 
   if (mask & SpvImageOperandsLodMask) {
-    if (!is_explicit_lod && opcode != SpvOpImageFetch &&
-        opcode != SpvOpImageSparseFetch) {
+    if (!is_valid_lod_operand && opcode != SpvOpImageFetch &&
+        opcode != SpvOpImageSparseFetch && !is_valid_gather_lod_bias_amd) {
       return _.diag(SPV_ERROR_INVALID_DATA, inst)
              << "Image Operand Lod can only be used with ExplicitLod opcodes "
              << "and OpImageFetch";
@@ -291,7 +317,7 @@ spv_result_t ValidateImageOperands(ValidationState_t& _,
     }
 
     const uint32_t type_id = _.GetTypeId(inst->word(word_index++));
-    if (is_explicit_lod) {
+    if (is_explicit_lod || is_valid_gather_lod_bias_amd) {
       if (!_.IsFloatScalarType(type_id)) {
         return _.diag(SPV_ERROR_INVALID_DATA, inst)
                << "Expected Image Operand Lod to be float scalar when used "
@@ -710,13 +736,21 @@ spv_result_t ValidateTypeImage(ValidationState_t& _, const Instruction* inst) {
            << "Corrupt image type definition";
   }
 
-  if (spvIsVulkanEnv(_.context()->target_env)) {
+  const auto target_env = _.context()->target_env;
+  if (spvIsVulkanEnv(target_env)) {
     if ((!_.IsFloatScalarType(info.sampled_type) &&
          !_.IsIntScalarType(info.sampled_type)) ||
-        32 != _.GetBitWidth(info.sampled_type)) {
+        (32 != _.GetBitWidth(info.sampled_type) &&
+         (64 != _.GetBitWidth(info.sampled_type) ||
+          !_.HasCapability(SpvCapabilityInt64ImageEXT)))) {
       return _.diag(SPV_ERROR_INVALID_DATA, inst)
              << "Expected Sampled Type to be a 32-bit int or float "
                 "scalar type for Vulkan environment";
+    }
+  } else if (spvIsOpenCLEnv(target_env)) {
+    if (!_.IsVoidType(info.sampled_type)) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "Sampled Type must be OpTypeVoid in the OpenCL environment.";
     }
   } else {
     const SpvOp sampled_type_opcode = _.GetIdOpcode(info.sampled_type);
@@ -741,14 +775,46 @@ spv_result_t ValidateTypeImage(ValidationState_t& _, const Instruction* inst) {
            << "Invalid Arrayed " << info.arrayed << " (must be 0 or 1)";
   }
 
+  if (spvIsOpenCLEnv(target_env)) {
+    if ((info.arrayed == 1) && (info.dim != SpvDim1D) &&
+        (info.dim != SpvDim2D)) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "In the OpenCL environment, Arrayed may only be set to 1 "
+             << "when Dim is either 1D or 2D.";
+    }
+  }
+
   if (info.multisampled > 1) {
     return _.diag(SPV_ERROR_INVALID_DATA, inst)
            << "Invalid MS " << info.multisampled << " (must be 0 or 1)";
   }
 
+  if (spvIsOpenCLEnv(target_env)) {
+    if (info.multisampled != 0) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "MS must be 0 in the OpenCL environment.";
+    }
+  }
+
   if (info.sampled > 2) {
     return _.diag(SPV_ERROR_INVALID_DATA, inst)
            << "Invalid Sampled " << info.sampled << " (must be 0, 1 or 2)";
+  }
+
+  if (spvIsVulkanEnv(target_env) || spvIsWebGPUEnv(target_env)) {
+    if (info.sampled == 0) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "Sampled must be 1 or 2 in the "
+             << (spvIsVulkanEnv(target_env) ? "Vulkan" : "WebGPU")
+             << " environment.";
+    }
+  }
+
+  if (spvIsOpenCLEnv(_.context()->target_env)) {
+    if (info.sampled != 0) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "Sampled must be 0 in the OpenCL environment.";
+    }
   }
 
   if (info.dim == SpvDimSubpassData) {
@@ -763,7 +829,24 @@ spv_result_t ValidateTypeImage(ValidationState_t& _, const Instruction* inst) {
     }
   }
 
-  // Format and Access Qualifier are checked elsewhere.
+  // Format and Access Qualifier are also checked elsewhere.
+
+  if (spvIsOpenCLEnv(_.context()->target_env)) {
+    if (info.access_qualifier == SpvAccessQualifierMax) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "In the OpenCL environment, the optional Access Qualifier"
+             << " must be present.";
+    }
+  }
+
+  if (info.multisampled && (info.sampled == 2) &&
+      (info.dim != SpvDimSubpassData)) {
+    if (!_.HasCapability(SpvCapabilityStorageImageMultisample)) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "Capability StorageImageMultisample is required when using "
+                "multisampled storage image";
+    }
+  }
 
   return SPV_SUCCESS;
 }
@@ -799,6 +882,7 @@ bool IsAllowedSampledImageOperand(SpvOp opcode) {
     case SpvOpImageSparseSampleDrefExplicitLod:
     case SpvOpImageSparseGather:
     case SpvOpImageSparseDrefGather:
+    case SpvOpCopyObject:
       return true;
     default:
       return false;
@@ -1078,6 +1162,17 @@ spv_result_t ValidateImageLod(ValidationState_t& _, const Instruction* inst) {
   }
 
   const uint32_t mask = inst->word(5);
+
+  if (spvIsOpenCLEnv(_.context()->target_env)) {
+    if (opcode == SpvOpImageSampleExplicitLod) {
+      if (mask & SpvImageOperandsConstOffsetMask) {
+        return _.diag(SPV_ERROR_INVALID_DATA, inst)
+               << "ConstOffset image operand not allowed "
+               << "in the OpenCL environment.";
+      }
+    }
+  }
+
   if (spv_result_t result =
           ValidateImageOperands(_, inst, info, mask, /* word_index = */ 6))
     return result;
@@ -1404,6 +1499,15 @@ spv_result_t ValidateImageRead(ValidationState_t& _, const Instruction* inst) {
   if (inst->words().size() <= 5) return SPV_SUCCESS;
 
   const uint32_t mask = inst->word(5);
+
+  if (spvIsOpenCLEnv(_.context()->target_env)) {
+    if (mask & SpvImageOperandsConstOffsetMask) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "ConstOffset image operand not allowed "
+             << "in the OpenCL environment.";
+    }
+  }
+
   if (spv_result_t result =
           ValidateImageOperands(_, inst, info, mask, /* word_index = */ 6))
     return result;
@@ -1481,7 +1585,15 @@ spv_result_t ValidateImageWrite(ValidationState_t& _, const Instruction* inst) {
     }
   }
 
-  if (inst->words().size() <= 4) return SPV_SUCCESS;
+  if (inst->words().size() <= 4) {
+    return SPV_SUCCESS;
+  } else {
+    if (spvIsOpenCLEnv(_.context()->target_env)) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "Optional Image Operands are not allowed in the OpenCL "
+             << "environment.";
+    }
+  }
 
   const uint32_t mask = inst->word(4);
   if (spv_result_t result =
@@ -1646,8 +1758,39 @@ spv_result_t ValidateImageQueryLod(ValidationState_t& _,
                                    const Instruction* inst) {
   _.function(inst->function()->id())
       ->RegisterExecutionModelLimitation(
-          SpvExecutionModelFragment,
-          "OpImageQueryLod requires Fragment execution model");
+          [&](SpvExecutionModel model, std::string* message) {
+            if (model != SpvExecutionModelFragment &&
+                model != SpvExecutionModelGLCompute) {
+              if (message) {
+                *message = std::string(
+                    "OpImageQueryLod requires Fragment or GLCompute execution "
+                    "model");
+              }
+              return false;
+            }
+            return true;
+          });
+  _.function(inst->function()->id())
+      ->RegisterLimitation([](const ValidationState_t& state,
+                              const Function* entry_point,
+                              std::string* message) {
+        const auto* models = state.GetExecutionModels(entry_point->id());
+        const auto* modes = state.GetExecutionModes(entry_point->id());
+        if (models->find(SpvExecutionModelGLCompute) != models->end() &&
+            modes->find(SpvExecutionModeDerivativeGroupLinearNV) ==
+                modes->end() &&
+            modes->find(SpvExecutionModeDerivativeGroupQuadsNV) ==
+                modes->end()) {
+          if (message) {
+            *message = std::string(
+                "OpImageQueryLod requires DerivativeGroupQuadsNV "
+                "or DerivativeGroupLinearNV execution mode for GLCompute "
+                "execution model");
+          }
+          return false;
+        }
+        return true;
+      });
 
   const uint32_t result_type = inst->type_id();
   if (!_.IsFloatVectorType(result_type)) {
@@ -1771,9 +1914,44 @@ spv_result_t ImagePass(ValidationState_t& _, const Instruction* inst) {
   const SpvOp opcode = inst->opcode();
   if (IsImplicitLod(opcode)) {
     _.function(inst->function()->id())
-        ->RegisterExecutionModelLimitation(
-            SpvExecutionModelFragment,
-            "ImplicitLod instructions require Fragment execution model");
+        ->RegisterExecutionModelLimitation([opcode](SpvExecutionModel model,
+                                                    std::string* message) {
+          if (model != SpvExecutionModelFragment &&
+              model != SpvExecutionModelGLCompute) {
+            if (message) {
+              *message =
+                  std::string(
+                      "ImplicitLod instructions require Fragment or GLCompute "
+                      "execution model: ") +
+                  spvOpcodeString(opcode);
+            }
+            return false;
+          }
+          return true;
+        });
+    _.function(inst->function()->id())
+        ->RegisterLimitation([opcode](const ValidationState_t& state,
+                                      const Function* entry_point,
+                                      std::string* message) {
+          const auto* models = state.GetExecutionModels(entry_point->id());
+          const auto* modes = state.GetExecutionModes(entry_point->id());
+          if (models->find(SpvExecutionModelGLCompute) != models->end() &&
+              modes->find(SpvExecutionModeDerivativeGroupLinearNV) ==
+                  modes->end() &&
+              modes->find(SpvExecutionModeDerivativeGroupQuadsNV) ==
+                  modes->end()) {
+            if (message) {
+              *message =
+                  std::string(
+                      "ImplicitLod instructions require DerivativeGroupQuadsNV "
+                      "or DerivativeGroupLinearNV execution mode for GLCompute "
+                      "execution model: ") +
+                  spvOpcodeString(opcode);
+            }
+            return false;
+          }
+          return true;
+        });
   }
 
   switch (opcode) {

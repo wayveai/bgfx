@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 Branimir Karadzic. All rights reserved.
+ * Copyright 2011-2020 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
  */
 
@@ -888,7 +888,7 @@ struct PosUvwColorVertex
 
 	static void init()
 	{
-		ms_decl
+		ms_layout
 			.begin()
 			.add(bgfx::Attrib::Position,  2, bgfx::AttribType::Float)
 			.add(bgfx::Attrib::TexCoord0, 3, bgfx::AttribType::Float)
@@ -906,10 +906,10 @@ struct PosUvwColorVertex
 		m_abgr = _abgr;
 	}
 
-	static bgfx::VertexDecl ms_decl;
+	static bgfx::VertexLayout ms_layout;
 };
 
-bgfx::VertexDecl PosUvwColorVertex::ms_decl;
+bgfx::VertexLayout PosUvwColorVertex::ms_layout;
 
 static uint32_t addQuad(uint16_t* _indices, uint16_t _idx0, uint16_t _idx1, uint16_t _idx2, uint16_t _idx3)
 {
@@ -937,10 +937,10 @@ void setGeometry(
 {
 	if (Geometry::Quad == _type)
 	{
-		if (6 == bgfx::getAvailTransientVertexBuffer(6, PosUvwColorVertex::ms_decl) )
+		if (6 == bgfx::getAvailTransientVertexBuffer(6, PosUvwColorVertex::ms_layout) )
 		{
 			bgfx::TransientVertexBuffer vb;
-			bgfx::allocTransientVertexBuffer(&vb, 6, PosUvwColorVertex::ms_decl);
+			bgfx::allocTransientVertexBuffer(&vb, 6, PosUvwColorVertex::ms_layout);
 			PosUvwColorVertex* vertex = (PosUvwColorVertex*)vb.data;
 
 			const float widthf  = float(_width);
@@ -971,10 +971,10 @@ void setGeometry(
 	{
 		const uint32_t numVertices = 14;
 		const uint32_t numIndices  = 36;
-		if (checkAvailTransientBuffers(numVertices, PosUvwColorVertex::ms_decl, numIndices) )
+		if (checkAvailTransientBuffers(numVertices, PosUvwColorVertex::ms_layout, numIndices) )
 		{
 			bgfx::TransientVertexBuffer tvb;
-			bgfx::allocTransientVertexBuffer(&tvb, numVertices, PosUvwColorVertex::ms_decl);
+			bgfx::allocTransientVertexBuffer(&tvb, numVertices, PosUvwColorVertex::ms_layout);
 
 			bgfx::TransientIndexBuffer tib;
 			bgfx::allocTransientIndexBuffer(&tib, numIndices);
@@ -1073,7 +1073,7 @@ struct InterpolatorT
 	{
 		from     = _value;
 		to       = _value;
-		duration = 0.0;
+		duration = 0.0f;
 		offset   = bx::getHPCounter();
 	}
 
@@ -1095,7 +1095,7 @@ struct InterpolatorT
 			const double freq = double(bx::getHPFrequency() );
 			int64_t now = bx::getHPCounter();
 			float time = (float)(double(now - offset) / freq);
-			float lerp = bx::clamp(time, 0.0f, duration) / duration;
+			float lerp = duration != 0.0f ? bx::clamp(time, 0.0f, duration) / duration : 0.0f;
 			return lerpT(from, to, easeT(lerp) );
 		}
 
@@ -1104,11 +1104,16 @@ struct InterpolatorT
 
 	bool isActive() const
 	{
-		const double freq = double(bx::getHPFrequency() );
-		int64_t now = bx::getHPCounter();
-		float time = (float)(double(now - offset) / freq);
-		float lerp = bx::clamp(time, 0.0f, duration) / duration;
-		return lerp < 1.0f;
+		if (0.0f < duration)
+		{
+			const double freq = double(bx::getHPFrequency() );
+			int64_t now = bx::getHPCounter();
+			float time = (float)(double(now - offset) / freq);
+			float lerp = bx::clamp(time, 0.0f, duration) / duration;
+			return lerp < 1.0f;
+		}
+
+		return false;
 	}
 };
 
@@ -1118,9 +1123,9 @@ typedef InterpolatorT<bx::lerp,      bx::easeLinear>     InterpolatorLinear;
 
 void keyBindingHelp(const char* _bindings, const char* _description)
 {
-	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), _bindings);
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", _bindings);
 	ImGui::SameLine(100);
-	ImGui::Text(_description);
+	ImGui::Text("%s", _description);
 }
 
 void associate()
@@ -1214,31 +1219,31 @@ void help(const char* _error = NULL)
 {
 	if (NULL != _error)
 	{
-		fprintf(stderr, "Error:\n%s\n\n", _error);
+		bx::printf("Error:\n%s\n\n", _error);
 	}
 
-	fprintf(stderr
-		, "texturev, bgfx texture viewer tool, version %d.%d.%d.\n"
-		  "Copyright 2011-2019 Branimir Karadzic. All rights reserved.\n"
+	bx::printf(
+		  "texturev, bgfx texture viewer tool, version %d.%d.%d.\n"
+		  "Copyright 2011-2020 Branimir Karadzic. All rights reserved.\n"
 		  "License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause\n\n"
 		, BGFX_TEXTUREV_VERSION_MAJOR
 		, BGFX_TEXTUREV_VERSION_MINOR
 		, BGFX_API_VERSION
 		);
 
-	fprintf(stderr
-		, "Usage: texturev <file path>\n"
+	bx::printf(
+		  "Usage: texturev <file path>\n"
 		  "\n"
 		  "Supported input file types:\n"
 		  );
 
 	for (uint32_t ii = 0; ii < BX_COUNTOF(s_supportedExt); ++ii)
 	{
-		fprintf(stderr, "    *.%s\n", s_supportedExt[ii]);
+		bx::printf("    *.%s\n", s_supportedExt[ii]);
 	}
 
-	fprintf(stderr
-		, "\n"
+	bx::printf(
+		  "\n"
 		  "Options:\n"
 		  "  -h, --help               Help.\n"
 		  "  -v, --version            Version information only.\n"
@@ -1254,8 +1259,8 @@ int _main_(int _argc, char** _argv)
 
 	if (cmdLine.hasArg('v', "version") )
 	{
-		fprintf(stderr
-			, "texturev, bgfx texture viewer tool, version %d.%d.%d.\n"
+		bx::printf(
+			  "texturev, bgfx texture viewer tool, version %d.%d.%d.\n"
 			, BGFX_TEXTUREV_VERSION_MAJOR
 			, BGFX_TEXTUREV_VERSION_MINOR
 			, BGFX_API_VERSION
@@ -1633,6 +1638,7 @@ int _main_(int _argc, char** _argv)
 					ImGui::Separator();
 					ImGui::TextColored(
 						  ImVec4(0.0f, 1.0f, 1.0f, 1.0f)
+						, "%s"
 						, view.m_fileList[view.m_fileIndex].c_str()
 						);
 
@@ -1843,19 +1849,23 @@ int _main_(int _argc, char** _argv)
 								ImGui::SetScrollY(ImGui::GetScrollY() + (index-end+1)*itemHeight);
 							}
 
-							ImGuiListClipper clipper(itemCount, itemHeight);
+							ImGuiListClipper clipper;
+							clipper.Begin(itemCount, itemHeight);
 
-							for (int32_t pos = clipper.DisplayStart; pos < clipper.DisplayEnd; ++pos)
+							while (clipper.Step() )
 							{
-								ImGui::PushID(pos);
-
-								bool isSelected = uint32_t(pos) == view.m_fileIndex;
-								if (ImGui::Selectable(view.m_fileList[pos].c_str(), &isSelected) )
+								for (int32_t pos = clipper.DisplayStart; pos < clipper.DisplayEnd; ++pos)
 								{
-									view.m_fileIndex = pos;
-								}
+									ImGui::PushID(pos);
 
-								ImGui::PopID();
+									bool isSelected = uint32_t(pos) == view.m_fileIndex;
+									if (ImGui::Selectable(view.m_fileList[pos].c_str(), &isSelected) )
+									{
+										view.m_fileIndex = pos;
+									}
+
+									ImGui::PopID();
+								}
 							}
 
 							clipper.End();
@@ -1877,7 +1887,7 @@ int _main_(int _argc, char** _argv)
 
 				ImGui::Text(
 					"texturev, bgfx texture viewer tool " ICON_KI_WRENCH ", version %d.%d.%d.\n"
-					"Copyright 2011-2019 Branimir Karadzic. All rights reserved.\n"
+					"Copyright 2011-2020 Branimir Karadzic. All rights reserved.\n"
 					"License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause\n"
 					, BGFX_TEXTUREV_VERSION_MAJOR
 					, BGFX_TEXTUREV_VERSION_MINOR

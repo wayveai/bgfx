@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 Branimir Karadzic. All rights reserved.
+ * Copyright 2011-2020 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
  */
 
@@ -23,6 +23,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <xinput.h>
+#include <shellapi.h>
 
 #ifndef XINPUT_GAMEPAD_GUIDE
 #	define XINPUT_GAMEPAD_GUIDE 0x400
@@ -1023,7 +1024,9 @@ namespace entry
 
 		void setMouseLock(HWND _hwnd, bool _lock)
 		{
-			if (_hwnd != m_mouseLock)
+			HWND newMouseLock = _lock ? _hwnd : 0;
+
+			if (newMouseLock != m_mouseLock)
 			{
 				if (_lock)
 				{
@@ -1038,7 +1041,7 @@ namespace entry
 					ShowCursor(true);
 				}
 
-				m_mouseLock = _hwnd;
+				m_mouseLock = newMouseLock;
 			}
 		}
 

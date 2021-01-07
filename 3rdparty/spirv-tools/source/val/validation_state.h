@@ -79,9 +79,6 @@ class ValidationState_t {
     // Permit group oerations Reduce, InclusiveScan, ExclusiveScan
     bool group_ops_reduce_and_scans = false;
 
-    // Disallows the use of OpUndef
-    bool bans_op_undef = false;
-
     // Allow OpTypeInt with 8 bit width?
     bool declare_int8_type = false;
 
@@ -197,6 +194,9 @@ class ValidationState_t {
 
   /// Increments the module_layout_order_section_
   void ProgressToNextLayoutSectionOrder();
+
+  /// Determines if the op instruction is in a previous layout section
+  bool IsOpcodeInPreviousLayoutSection(SpvOp op);
 
   /// Determines if the op instruction is part of the current section
   bool IsOpcodeInCurrentLayoutSection(SpvOp op);
@@ -330,6 +330,12 @@ class ValidationState_t {
     return module_capabilities_.Contains(cap);
   }
 
+  /// Returns a reference to the set of capabilities in the module.
+  /// This is provided for debuggability.
+  const CapabilitySet& module_capabilities() const {
+    return module_capabilities_;
+  }
+
   /// Returns true if the extension is enabled in the module.
   bool HasExtension(Extension ext) const {
     return module_extensions_.Contains(ext);
@@ -380,7 +386,11 @@ class ValidationState_t {
 
   /// Registers the decoration for the given <id>
   void RegisterDecorationForId(uint32_t id, const Decoration& dec) {
-    id_decorations_[id].push_back(dec);
+    auto& dec_list = id_decorations_[id];
+    auto lb = std::find(dec_list.begin(), dec_list.end(), dec);
+    if (lb == dec_list.end()) {
+      dec_list.push_back(dec);
+    }
   }
 
   /// Registers the list of decorations for the given <id>
@@ -548,6 +558,7 @@ class ValidationState_t {
 
   // Returns true iff |id| is a type corresponding to the name of the function.
   // Only works for types not for objects.
+  bool IsVoidType(uint32_t id) const;
   bool IsFloatScalarType(uint32_t id) const;
   bool IsFloatVectorType(uint32_t id) const;
   bool IsFloatScalarOrVectorType(uint32_t id) const;
@@ -567,6 +578,14 @@ class ValidationState_t {
   bool IsFloatCooperativeMatrixType(uint32_t id) const;
   bool IsIntCooperativeMatrixType(uint32_t id) const;
   bool IsUnsignedIntCooperativeMatrixType(uint32_t id) const;
+
+  // Returns true if |id| is a type id that contains |type| (or integer or
+  // floating point type) of |width| bits.
+  bool ContainsSizedIntOrFloatType(uint32_t id, SpvOp type,
+                                   uint32_t width) const;
+  // Returns true if |id| is a type id that contains a 8- or 16-bit int or
+  // 16-bit float that is not generally enabled for use.
+  bool ContainsLimitedUseIntOrFloatType(uint32_t id) const;
 
   // Gets value from OpConstant and OpSpecConstant as uint64.
   // Returns false on failure (no instruction, wrong instruction, not int).
@@ -678,6 +697,34 @@ class ValidationState_t {
   // If |check_decorations| is false, then the decorations are not checked.
   bool LogicallyMatch(const Instruction* lhs, const Instruction* rhs,
                       bool check_decorations);
+
+  // Traces |inst| to find a single base pointer. Returns the base pointer.
+  // Will trace through the following instructions:
+  // * OpAccessChain
+  // * OpInBoundsAccessChain
+  // * OpPtrAccessChain
+  // * OpInBoundsPtrAccessChain
+  // * OpCopyObject
+  const Instruction* TracePointer(const Instruction* inst) const;
+
+  // Validates the storage class for the target environment.
+  bool IsValidStorageClass(SpvStorageClass storage_class) const;
+
+  // Takes a Vulkan Valid Usage ID (VUID) as |id| and optional |reference| and
+  // will return a non-empty string only if ID is known and targeting Vulkan.
+  // VUIDs are found in the Vulkan-Docs repo in the form "[[VUID-ref-ref-id]]"
+  // where "id" is always an 5 char long number (with zeros padding) and matches
+  // to |id|. |reference| is used if there is a "common validity" and the VUID
+  // shares the same |id| value.
+  //
+  // More details about Vulkan validation can be found in Vulkan Guide:
+  // https://github.com/KhronosGroup/Vulkan-Guide/blob/master/chapters/validation_overview.md
+  std::string VkErrorID(uint32_t id, const char* reference = nullptr) const;
+
+  // Testing method to allow setting the current layout section.
+  void SetCurrentLayoutSectionForTesting(ModuleLayoutSection section) {
+    current_layout_section_ = section;
+  }
 
  private:
   ValidationState_t(const ValidationState_t&);

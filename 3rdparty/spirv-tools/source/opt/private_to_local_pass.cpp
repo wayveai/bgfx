@@ -58,7 +58,9 @@ Pass::Status PrivateToLocalPass::Process() {
 
   modified = !variables_to_move.empty();
   for (auto p : variables_to_move) {
-    MoveVariable(p.first, p.second);
+    if (!MoveVariable(p.first, p.second)) {
+      return Status::Failure;
+    }
     localized_variables.insert(p.first->result_id());
   }
 
@@ -112,7 +114,7 @@ Function* PrivateToLocalPass::FindLocalFunction(const Instruction& inst) const {
   return target_function;
 }  // namespace opt
 
-void PrivateToLocalPass::MoveVariable(Instruction* variable,
+bool PrivateToLocalPass::MoveVariable(Instruction* variable,
                                       Function* function) {
   // The variable needs to be removed from the global section, and placed in the
   // header of the function.  First step remove from the global list.
@@ -125,6 +127,9 @@ void PrivateToLocalPass::MoveVariable(Instruction* variable,
 
   // Update the type as well.
   uint32_t new_type_id = GetNewType(variable->type_id());
+  if (new_type_id == 0) {
+    return false;
+  }
   variable->SetResultType(new_type_id);
 
   // Place the variable at the start of the first basic block.
@@ -133,7 +138,7 @@ void PrivateToLocalPass::MoveVariable(Instruction* variable,
   function->begin()->begin()->InsertBefore(move(var));
 
   // Update uses where the type may have changed.
-  UpdateUses(variable->result_id());
+  return UpdateUses(variable);
 }
 
 uint32_t PrivateToLocalPass::GetNewType(uint32_t old_type_id) {
@@ -143,13 +148,19 @@ uint32_t PrivateToLocalPass::GetNewType(uint32_t old_type_id) {
       old_type_inst->GetSingleWordInOperand(kSpvTypePointerTypeIdInIdx);
   uint32_t new_type_id =
       type_mgr->FindPointerToType(pointee_type_id, SpvStorageClassFunction);
-  context()->UpdateDefUse(context()->get_def_use_mgr()->GetDef(new_type_id));
+  if (new_type_id != 0) {
+    context()->UpdateDefUse(context()->get_def_use_mgr()->GetDef(new_type_id));
+  }
   return new_type_id;
 }
 
 bool PrivateToLocalPass::IsValidUse(const Instruction* inst) const {
   // The cases in this switch have to match the cases in |UpdateUse|.
   // If we don't know how to update it, it is not valid.
+  if (inst->GetOpenCL100DebugOpcode() ==
+      OpenCLDebugInfo100DebugGlobalVariable) {
+    return true;
+  }
   switch (inst->opcode()) {
     case SpvOpLoad:
     case SpvOpStore:
@@ -168,10 +179,16 @@ bool PrivateToLocalPass::IsValidUse(const Instruction* inst) const {
   }
 }
 
-void PrivateToLocalPass::UpdateUse(Instruction* inst) {
+bool PrivateToLocalPass::UpdateUse(Instruction* inst, Instruction* user) {
   // The cases in this switch have to match the cases in |IsValidUse|.  If we
   // don't think it is valid, the optimization will not view the variable as a
   // candidate, and therefore the use will not be updated.
+  if (inst->GetOpenCL100DebugOpcode() ==
+      OpenCLDebugInfo100DebugGlobalVariable) {
+    context()->get_debug_info_mgr()->ConvertDebugGlobalToLocalVariable(inst,
+                                                                       user);
+    return true;
+  }
   switch (inst->opcode()) {
     case SpvOpLoad:
     case SpvOpStore:
@@ -179,14 +196,20 @@ void PrivateToLocalPass::UpdateUse(Instruction* inst) {
       // The type is fine because it is the type pointed to, and that does not
       // change.
       break;
-    case SpvOpAccessChain:
+    case SpvOpAccessChain: {
       context()->ForgetUses(inst);
-      inst->SetResultType(GetNewType(inst->type_id()));
+      uint32_t new_type_id = GetNewType(inst->type_id());
+      if (new_type_id == 0) {
+        return false;
+      }
+      inst->SetResultType(new_type_id);
       context()->AnalyzeUses(inst);
 
       // Update uses where the type may have changed.
-      UpdateUses(inst->result_id());
-      break;
+      if (!UpdateUses(inst)) {
+        return false;
+      }
+    } break;
     case SpvOpName:
     case SpvOpEntryPoint:  // entry points will be updated separately.
       break;
@@ -195,15 +218,21 @@ void PrivateToLocalPass::UpdateUse(Instruction* inst) {
              "Do not know how to update the type for this instruction.");
       break;
   }
+  return true;
 }
-void PrivateToLocalPass::UpdateUses(uint32_t id) {
+
+bool PrivateToLocalPass::UpdateUses(Instruction* inst) {
+  uint32_t id = inst->result_id();
   std::vector<Instruction*> uses;
   context()->get_def_use_mgr()->ForEachUser(
       id, [&uses](Instruction* use) { uses.push_back(use); });
 
   for (Instruction* use : uses) {
-    UpdateUse(use);
+    if (!UpdateUse(use, inst)) {
+      return false;
+    }
   }
+  return true;
 }
 
 }  // namespace opt
