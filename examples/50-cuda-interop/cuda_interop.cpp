@@ -3,11 +3,12 @@
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
+#include "common.h"
+
 #if BGFX_CONFIG_CUDA_INTEROP
 
 #include <bx/bounds.h>
 #include <bx/file.h>
-#include "common.h"
 #include "bgfx_utils.h"
 #include "imgui/imgui.h"
 #include "camera.h"
@@ -1047,8 +1048,10 @@ ENTRY_IMPLEMENT_MAIN(
 	);
 
 #else
+#if ENTRY_CONFIG_IMPLEMENT_MAIN
 	extern "C" int _main_(int /*_argc*/, char** /*_argv*/)
 	{
 		return 0;
 	}
+#endif  // ENTRY_CONFIG_IMPLEMENT_MAIN
 #endif  // BGFX_CONFIG_CUDA_INTEROP
