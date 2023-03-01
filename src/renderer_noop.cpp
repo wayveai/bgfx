@@ -186,15 +186,15 @@ namespace bgfx { namespace noop
 		{
 		}
 
-		void getExternalSemaphore(CudaSemaphore* /*_cudaSemaphore*/)
+		void getExternalSemaphore(CudaSemaphore* /*_cudaSemaphore*/) override
 		{
 		}
 
-		void setWaitExternal()
+		void setWaitExternal() override
 		{
 		}
 
-		void setSignalExternal()
+		void setSignalExternal() override
 		{
 		}
 

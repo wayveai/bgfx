@@ -1174,17 +1174,17 @@ namespace bgfx { namespace d3d9
 			BX_TRACE("CUDA Interop is not supported in DX9.");
 		}
 
-		void getExternalSemaphore(CudaSemaphore* /*_cudaSemaphore*/)
+		void getExternalSemaphore(CudaSemaphore* /*_cudaSemaphore*/) override
 		{
 			BX_TRACE("CUDA Interop is not supported in DX9.");
 		}
 
-		void setWaitExternal()
+		void setWaitExternal() override
 		{
 			BX_TRACE("CUDA Interop is not supported in DX9.");
 		}
 
-		void setSignalExternal()
+		void setSignalExternal() override
 		{
 			BX_TRACE("CUDA Interop is not supported in DX9.");
 		}

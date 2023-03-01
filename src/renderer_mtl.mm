@@ -1084,17 +1084,17 @@ BX_STATIC_ASSERT(BX_COUNTOF(s_accessNames) == Access::Count, "Invalid s_accessNa
 			BX_TRACE("CUDA Interop is not supported in Metal.");
 		}
 
-		void getExternalSemaphore(CudaSemaphore* /*_cudaSemaphore*/)
+		void getExternalSemaphore(CudaSemaphore* /*_cudaSemaphore*/) override
 		{
 			BX_TRACE("CUDA Interop is not supported in Metal.");
 		}
 
-		void setWaitExternal()
+		void setWaitExternal() override
 		{
 			BX_TRACE("CUDA Interop is not supported in Metal.");
 		}
 
-		void setSignalExternal()
+		void setSignalExternal() override
 		{
 			BX_TRACE("CUDA Interop is not supported in Metal.");
 		}

@@ -3485,17 +3485,17 @@ namespace bgfx { namespace gl
 			BX_TRACE("CUDA Interop is not supported in OpenGL.");
 		}
 
-		void getExternalSemaphore(CudaSemaphore* /*_cudaSemaphore*/)
+		void getExternalSemaphore(CudaSemaphore* /*_cudaSemaphore*/) override
 		{
 			BX_TRACE("CUDA Interop is not supported in OpenGL.");
 		}
 
-		void setWaitExternal()
+		void setWaitExternal() override
 		{
 			BX_TRACE("CUDA Interop is not supported in OpenGL.");
 		}
 
-		void setSignalExternal()
+		void setSignalExternal() override
 		{
 			BX_TRACE("CUDA Interop is not supported in OpenGL.");
 		}

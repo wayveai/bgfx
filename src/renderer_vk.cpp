@@ -2450,18 +2450,18 @@ VK_IMPORT_DEVICE
 			}
 		}
 
-		void getExternalSemaphore(CudaSemaphore* _cudaSemaphore)
+		void getExternalSemaphore(CudaSemaphore* _cudaSemaphore) override
 		{
 			_cudaSemaphore->waitSemaphore = m_externalSync.cudaSemaphore.waitSemaphore;
 			_cudaSemaphore->signalSemaphore = m_externalSync.cudaSemaphore.signalSemaphore;
 		}
 
-		void setWaitExternal()
+		void setWaitExternal() override
 		{
 			m_externalSync.shouldWait = true;
 		}
 
-		void setSignalExternal()
+		void setSignalExternal() override
 		{
 			m_externalSync.shouldSignal = true;
 		}

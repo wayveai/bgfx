@@ -1799,17 +1799,17 @@ namespace bgfx { namespace d3d12
 			BX_TRACE("CUDA Interop is not supported in DX12.");
 		}
 
-		void getExternalSemaphore(CudaSemaphore* /*_cudaSemaphore*/)
+		void getExternalSemaphore(CudaSemaphore* /*_cudaSemaphore*/) override
 		{
 			BX_TRACE("CUDA Interop is not supported in DX12.");
 		}
 
-		void setWaitExternal()
+		void setWaitExternal() override
 		{
 			BX_TRACE("CUDA Interop is not supported in DX12.");
 		}
 
-		void setSignalExternal()
+		void setSignalExternal() override
 		{
 			BX_TRACE("CUDA Interop is not supported in DX12.");
 		}

@@ -1047,8 +1047,10 @@ ENTRY_IMPLEMENT_MAIN(
 	);
 
 #else
-	int _main_(int /*_argc*/, char** /*_argv*/)
+#if ENTRY_CONFIG_IMPLEMENT_MAIN
+	extern "C" int _main_(int /*_argc*/, char** /*_argv*/)
 	{
 		return 0;
 	}
+#endif  // ENTRY_CONFIG_IMPLEMENT_MAIN
 #endif  // BGFX_CONFIG_CUDA_INTEROP
