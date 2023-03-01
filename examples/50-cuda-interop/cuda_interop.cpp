@@ -1046,4 +1046,9 @@ ENTRY_IMPLEMENT_MAIN(
 	, ""
 	);
 
+#else
+	int _main_(int /*_argc*/, char** /*_argv*/)
+	{
+		return 0;
+	}
 #endif  // BGFX_CONFIG_CUDA_INTEROP
