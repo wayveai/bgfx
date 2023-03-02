@@ -965,6 +965,8 @@ public:
 			return true;
 		}
 
+		cudaDeviceSynchronize();
+
 		return false;
 	}
 
