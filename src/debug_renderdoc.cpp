@@ -184,6 +184,14 @@ namespace bgfx
 	{
 	}
 
+	void renderDocStartFrameCapture()
+	{
+	}
+
+	void renderDocEndFrameCapture()
+	{
+	}
+
 } // namespace bgfx
 
 #endif // BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX
