@@ -152,6 +152,8 @@ namespace bgfx { namespace vk
 		{ VK_PRESENT_MODE_IMMEDIATE_KHR,    false, "VK_PRESENT_MODE_IMMEDIATE_KHR"    },
 	};
 
+  
+
 #define VK_IMPORT_FUNC(_optional, _func) PFN_##_func _func
 #define VK_IMPORT_INSTANCE_FUNC VK_IMPORT_FUNC
 #define VK_IMPORT_DEVICE_FUNC   VK_IMPORT_FUNC
@@ -161,6 +163,15 @@ VK_IMPORT_DEVICE
 #undef VK_IMPORT_DEVICE_FUNC
 #undef VK_IMPORT_INSTANCE_FUNC
 #undef VK_IMPORT_FUNC
+  static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+    // std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+
+    BX_TRACE(
+        "validation layer: %s."
+      , pCallbackData->pMessage
+      );
+    return VK_FALSE;
+  }
 
 	struct TextureFormatInfo
 	{
@@ -341,6 +352,22 @@ VK_IMPORT_DEVICE
 			}
 		}
 	}
+
+VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+  auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+  if (func != nullptr) {
+      return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+  } else {
+      return VK_ERROR_EXTENSION_NOT_PRESENT;
+  }
+}
+
+void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+        func(instance, debugMessenger, pAllocator);
+    }
+}
 
 	struct Extension
 	{
@@ -1247,11 +1274,25 @@ VK_IMPORT
 
 				dumpExtensions(VK_NULL_HANDLE, s_extension);
 
+        m_enabled_debugging = false;
+        VkDebugUtilsMessengerCreateInfoEXT debug_utils_create_info;
 				if (s_layer[Layer::VK_LAYER_KHRONOS_validation].m_device.m_supported
 				||  s_layer[Layer::VK_LAYER_KHRONOS_validation].m_instance.m_supported)
 				{
 					s_layer[Layer::VK_LAYER_LUNARG_standard_validation].m_device.m_supported   = false;
 					s_layer[Layer::VK_LAYER_LUNARG_standard_validation].m_instance.m_supported = false;
+          m_enabled_debugging = true;
+
+          debug_utils_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+          debug_utils_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+          debug_utils_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+          debug_utils_create_info.pfnUserCallback = debugCallback;
+
+          result = CreateDebugUtilsMessengerEXT(m_instance, &debug_utils_create_info, nullptr, &m_debugMessenger);
+          if (result != VK_SUCCESS) {
+            BX_TRACE("Init error: CreateDebugUtilsMessengerEXT failed %d: %s.", result, getName(result) );
+					  goto error;
+          }
 				}
 
 				uint32_t numEnabledLayers = 0;
@@ -1346,7 +1387,7 @@ VK_IMPORT
 
 				VkInstanceCreateInfo ici;
 				ici.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-				ici.pNext = NULL;
+				ici.pNext = m_enabled_debugging ? (VkDebugUtilsMessengerCreateInfoEXT*) &debug_utils_create_info : NULL;
 #if BX_PLATFORM_OSX
 				ici.flags = 0 | VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 #else
@@ -2177,6 +2218,10 @@ VK_IMPORT_DEVICE
 					vkDestroyDebugReportCallbackEXT(m_instance, m_debugReportCallback, m_allocatorCb);
 				}
 
+        if (m_enabled_debugging) {
+          DestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
+        }
+
 				vkDestroyInstance(m_instance, m_allocatorCb);
 				BX_FALLTHROUGH;
 
@@ -2258,6 +2303,10 @@ VK_IMPORT_DEVICE
 			{
 				vkDestroyDebugReportCallbackEXT(m_instance, m_debugReportCallback, m_allocatorCb);
 			}
+
+      if (m_enabled_debugging) {
+        DestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
+      }
 
 			vkDestroyInstance(m_instance, m_allocatorCb);
 
@@ -2473,7 +2522,10 @@ VK_IMPORT_DEVICE
 			if (_makeCopy)
 			{
 				kick(true);
+
+#if BGFX_CONFIG_CUDA_INTEROP
 				cudaCopyImage(&texture.m_cudaImage, _cudaImage, _asArray);
+#endif
 			}
 			else
 			{
@@ -4686,6 +4738,9 @@ VK_IMPORT_DEVICE
 		VkPhysicalDevice m_physicalDevice;
 		uint32_t         m_instanceApiVersion;
 
+    bool                     m_enabled_debugging;
+    VkDebugUtilsMessengerEXT m_debugMessenger;
+
 		VkPhysicalDeviceProperties       m_deviceProperties;
 		VkPhysicalDeviceMemoryProperties m_memoryProperties;
 		VkPhysicalDeviceFeatures         m_deviceFeatures;
@@ -6184,6 +6239,7 @@ VK_DESTROY
 			setImageMemoryBarrier(_commandBuffer, m_sampledLayout, true);
 		}
 
+#if BGFX_CONFIG_CUDA_INTEROP
 		if (enableExport) {
 			cudaImportImage(
 				m_width,
@@ -6195,6 +6251,7 @@ VK_DESTROY
 				&m_cudaImage
 			);
 		}
+#endif
 
 		return result;
 	}
@@ -6480,9 +6537,12 @@ VK_DESTROY
 	{
 		m_readback.destroy();
 
+
+#if BGFX_CONFIG_CUDA_INTEROP
 		if (m_cudaImage.isValid()) {
 			cudaDestroyImage(&m_cudaImage);
 		}
+#endif
 
 		if (VK_NULL_HANDLE != m_textureImage)
 		{
@@ -8375,11 +8435,13 @@ VK_DESTROY
 			BX_WARN(true, "Failed to create external semaphore.");
 		}
 
+#if BGFX_CONFIG_CUDA_INTEROP
 		cudaImportSemaphores(
 			getExternalSemaphoreHandle(s_renderVK->m_device, vkSignalSemaphore),
 			getExternalSemaphoreHandle(s_renderVK->m_device, vkWaitSemaphore),
 			&cudaSemaphore
 		);
+#endif
 	}
 
 	void RendererContextVK::ExternalSynchronisation::destroy()
@@ -8395,8 +8457,9 @@ VK_DESTROY
 			vkSignalSemaphore = VK_NULL_HANDLE;
 		}
 
+#if BGFX_CONFIG_CUDA_INTEROP
 		cudaDestroySemaphores(&cudaSemaphore);
-
+#endif
 		shouldWait = false;
 		shouldSignal = false;
 	}
