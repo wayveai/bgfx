@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 Branimir Karadzic. All rights reserved.
+ * Copyright 2011-2024 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
@@ -53,7 +53,6 @@ namespace bgfx
 		{
 			Noop,         //!< No rendering.
 			Agc,          //!< AGC
-			Direct3D9,    //!< Direct3D 9.0
 			Direct3D11,   //!< Direct3D 11.0
 			Direct3D12,   //!< Direct3D 12.0
 			Gnm,          //!< GNM
@@ -62,7 +61,6 @@ namespace bgfx
 			OpenGLES,     //!< OpenGL ES 2.0+
 			OpenGL,       //!< OpenGL 2.1+
 			Vulkan,       //!< Vulkan
-			WebGPU,       //!< WebGPU
 
 			Count
 		};
@@ -180,19 +178,19 @@ namespace bgfx
 			ATCE,         //!< ATCE RGBA 8 BPP explicit alpha
 			ATCI,         //!< ATCI RGBA 8 BPP interpolated alpha
 			ASTC4x4,      //!< ASTC 4x4 8.0 BPP
-			ASTC5x4,	  //!< ASTC 5x4 6.40 BPP
+			ASTC5x4,      //!< ASTC 5x4 6.40 BPP
 			ASTC5x5,      //!< ASTC 5x5 5.12 BPP
-			ASTC6x5,	  //!< ASTC 6x5 4.27 BPP
+			ASTC6x5,      //!< ASTC 6x5 4.27 BPP
 			ASTC6x6,      //!< ASTC 6x6 3.56 BPP
 			ASTC8x5,      //!< ASTC 8x5 3.20 BPP
 			ASTC8x6,      //!< ASTC 8x6 2.67 BPP
-			ASTC8x8,	  //!< ASTC 8x8 2.00 BPP
+			ASTC8x8,      //!< ASTC 8x8 2.00 BPP
 			ASTC10x5,     //!< ASTC 10x5 2.56 BPP
-			ASTC10x6,	  //!< ASTC 10x6 2.13 BPP
-			ASTC10x8,	  //!< ASTC 10x8 1.60 BPP
-			ASTC10x10,	  //!< ASTC 10x10 1.28 BPP
-			ASTC12x10,	  //!< ASTC 12x10 1.07 BPP
-			ASTC12x12,	  //!< ASTC 12x12 0.89 BPP
+			ASTC10x6,     //!< ASTC 10x6 2.13 BPP
+			ASTC10x8,     //!< ASTC 10x8 1.60 BPP
+			ASTC10x10,    //!< ASTC 10x10 1.28 BPP
+			ASTC12x10,    //!< ASTC 12x10 1.07 BPP
+			ASTC12x12,    //!< ASTC 12x12 0.89 BPP
 
 			Unknown,      // Compressed formats above.
 
@@ -401,6 +399,22 @@ namespace bgfx
 
 			Count
 		};
+	};
+
+	/// Native window handle type.
+	///
+	/// @attention C99's equivalent binding is `bgfx_native_window_handle_type_t`.
+	///
+
+	struct NativeWindowHandleType
+	{
+		 enum Enum
+		 {
+		       Default = 0, //!< Platform default handle type (X11 on Linux).
+		       Wayland,     //!< Wayland.
+
+		       Count
+		 };
 	};
 
 	static const uint16_t kInvalidHandle = UINT16_MAX;
@@ -622,15 +636,16 @@ namespace bgfx
 	{
 		PlatformData();
 
-		void* ndt;          //!< Native display type (*nix specific).
-		void* nwh;          //!< Native window handle. If `NULL`, bgfx will create a headless
-		                    ///  context/device, provided the rendering API supports it.
-		void* context;      //!< GL context, D3D device, or Vulkan device. If `NULL`, bgfx
-		                    ///  will create context/device.
-		void* backBuffer;   //!< GL back-buffer, or D3D render target view. If `NULL` bgfx will
-		                    ///  create back-buffer color surface.
-		void* backBufferDS; //!< Backbuffer depth/stencil. If `NULL`, bgfx will create a back-buffer
-		                    ///  depth/stencil surface.
+		void* ndt;                         //!< Native display type (*nix specific).
+		void* nwh;                         //!< Native window handle. If `NULL`, bgfx will create a headless
+		                                   ///  context/device, provided the rendering API supports it.
+		void* context;                     //!< GL context, D3D device, or Vulkan device. If `NULL`, bgfx
+		                                   ///  will create context/device.
+		void* backBuffer;                  //!< GL back-buffer, or D3D render target view. If `NULL` bgfx will
+		                                   ///  create back-buffer color surface.
+		void* backBufferDS;                //!< Backbuffer depth/stencil. If `NULL`, bgfx will create a back-buffer
+		                                   ///  depth/stencil surface.
+		NativeWindowHandleType::Enum type; //!< Handle type. Needed for platforms having more than one option.
 	};
 
 	/// Backbuffer resolution and reset parameters.
@@ -647,6 +662,7 @@ namespace bgfx
 		uint32_t reset;             //!< Reset parameters.
 		uint8_t  numBackBuffers;    //!< Number of back buffers.
 		uint8_t  maxFrameLatency;   //!< Maximum frame latency.
+		uint8_t  debugTextScale;    //!< Scale factor for debug text.
 	};
 
 	/// Initialization parameters used by `bgfx::init`.
@@ -1091,13 +1107,16 @@ namespace bgfx
 	///
 	struct Encoder
 	{
-		/// Sets a debug marker. This allows you to group
-		/// graphics calls together for easy browsing in
-		/// graphics debugging tools.
+		/// Sets a debug marker. This allows you to group graphics calls together for easy
+		/// browsing in graphics debugging tools.
+		///
+		/// @param[in] _name Marker name.
+		/// @param[in] _len Marker name length (if length is INT32_MAX, it's expected that _name
+		///   is zero terminated string.
 		///
 		/// @attention C99's equivalent binding is `bgfx_encoder_set_marker`.
 		///
-		void setMarker(const char* _marker);
+		void setMarker(const char* _name, int32_t _len = INT32_MAX);
 
 		/// Set render states for draw primitive.
 		///
@@ -1555,8 +1574,8 @@ namespace bgfx
 			  ViewId _id
 			, ProgramHandle _program
 			, IndirectBufferHandle _indirectHandle
-			, uint16_t _start = 0
-			, uint16_t _num = 1
+			, uint32_t _start = 0
+			, uint32_t _num = 1
 			, uint32_t _depth = 0
 			, uint8_t _flags = BGFX_DISCARD_ALL
 			);
@@ -1582,10 +1601,10 @@ namespace bgfx
 			  ViewId _id
 			, ProgramHandle _program
 			, IndirectBufferHandle _indirectHandle
-			, uint16_t _start
+			, uint32_t _start
 			, IndexBufferHandle _numHandle
 			, uint32_t _numIndex = 0
-			, uint16_t _numMax = UINT16_MAX
+			, uint32_t _numMax = UINT32_MAX
 			, uint32_t _depth = 0
 			, uint8_t _flags = BGFX_DISCARD_ALL
 			);
@@ -1713,8 +1732,8 @@ namespace bgfx
 			  ViewId _id
 			, ProgramHandle _handle
 			, IndirectBufferHandle _indirectHandle
-			, uint16_t _start = 0
-			, uint16_t _num   = 1
+			, uint32_t _start = 0
+			, uint32_t _num   = 1
 			, uint8_t _flags  = BGFX_DISCARD_ALL
 			);
 
@@ -2655,6 +2674,9 @@ namespace bgfx
 	///
 	/// @returns Shader handle.
 	///
+	/// @remarks
+	///   Shader binary is obtained by compiling shader offline with shaderc command line tool.
+	///
 	/// @attention C99's equivalent binding is `bgfx_create_shader`.
 	///
 	ShaderHandle createShader(const Memory* _mem);
@@ -3146,7 +3168,8 @@ namespace bgfx
 	/// @param[in] _width Texture width.
 	/// @param[in] _height Texture height.
 	/// @param[in] _format Texture format. See: `TextureFormat::Enum`.
-	/// @param[in] _textureFlags Default texture sampling mode is linear, and wrap mode
+	/// @param[in] _textureFlags Texture creation (see `BGFX_TEXTURE_*`.), and sampler (see `BGFX_SAMPLER_*`)
+	///   flags. Default texture sampling mode is linear, and wrap mode
 	///   is repeat.
 	///   - `BGFX_SAMPLER_[U/V/W]_[MIRROR/CLAMP]` - Mirror or clamp to edge wrap
 	///     mode.
@@ -3170,7 +3193,8 @@ namespace bgfx
 	/// @param[in] _ratio Frame buffer size in respect to back-buffer size. See:
 	///   `BackbufferRatio::Enum`.
 	/// @param[in] _format Texture format. See: `TextureFormat::Enum`.
-	/// @param[in] _textureFlags Default texture sampling mode is linear, and wrap mode
+	/// @param[in] _textureFlags Texture creation (see `BGFX_TEXTURE_*`.), and sampler (see `BGFX_SAMPLER_*`)
+	///   flags. Default texture sampling mode is linear, and wrap mode
 	///   is repeat.
 	///   - `BGFX_SAMPLER_[U/V/W]_[MIRROR/CLAMP]` - Mirror or clamp to edge wrap
 	///     mode.
@@ -3416,6 +3440,8 @@ namespace bgfx
 	///
 	/// @param[in] _id View id.
 	/// @param[in] _name View name.
+	/// @param[in] _len View name length (if length is INT32_MAX, it's expected that _name
+	///   is zero terminated string.
 	///
 	/// @remarks
 	///   This is debug only feature.
@@ -3433,6 +3459,7 @@ namespace bgfx
 	void setViewName(
 		  ViewId _id
 		, const char* _name
+		, int32_t _len = INT32_MAX
 		);
 
 	/// Set view rectangle. Draw primitive outside view will be clipped.
@@ -3613,11 +3640,16 @@ namespace bgfx
 	///
 	void resetView(ViewId _id);
 
-	/// Sets debug marker.
+	/// Sets a debug marker. This allows you to group graphics calls together for easy
+	/// browsing in graphics debugging tools.
+	///
+	/// @param[in] _name Marker name.
+	/// @param[in] _len Marker name length (if length is INT32_MAX, it's expected that _name
+	///   is zero terminated string.
 	///
 	/// @attention C99's equivalent binding is `bgfx_set_marker`.
 	///
-	void setMarker(const char* _marker);
+	void setMarker(const char* _name, int32_t _len = INT32_MAX);
 
 	/// Set render states for draw primitive.
 	///
@@ -4073,8 +4105,8 @@ namespace bgfx
 		  ViewId _id
 		, ProgramHandle _program
 		, IndirectBufferHandle _indirectHandle
-		, uint16_t _start = 0
-		, uint16_t _num   = 1
+		, uint32_t _start = 0
+		, uint32_t _num   = 1
 		, uint32_t _depth = 0
 		, uint8_t _flags  = BGFX_DISCARD_ALL
 		);
@@ -4100,10 +4132,10 @@ namespace bgfx
 		  ViewId _id
 		, ProgramHandle _program
 		, IndirectBufferHandle _indirectHandle
-		, uint16_t _start
+		, uint32_t _start
 		, IndexBufferHandle _numHandle
 		, uint32_t _numIndex = 0
-		, uint16_t _numMax = UINT16_MAX
+		, uint32_t _numMax = UINT32_MAX
 		, uint32_t _depth = 0
 		, uint8_t _flags = BGFX_DISCARD_ALL
 		);
@@ -4231,8 +4263,8 @@ namespace bgfx
 		  ViewId _id
 		, ProgramHandle _handle
 		, IndirectBufferHandle _indirectHandle
-		, uint16_t _start = 0
-		, uint16_t _num   = 1
+		, uint32_t _start = 0
+		, uint32_t _num   = 1
 		, uint8_t _flags  = BGFX_DISCARD_ALL
 		);
 

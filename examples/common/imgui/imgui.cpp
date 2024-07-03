@@ -188,6 +188,8 @@ struct OcornutImguiContext
 
 	void create(float _fontSize, bx::AllocatorI* _allocator)
 	{
+		IMGUI_CHECKVERSION();
+
 		m_allocator = _allocator;
 
 		if (NULL == _allocator)
@@ -507,13 +509,13 @@ static OcornutImguiContext s_ctx;
 static void* memAlloc(size_t _size, void* _userData)
 {
 	BX_UNUSED(_userData);
-	return BX_ALLOC(s_ctx.m_allocator, _size);
+	return bx::alloc(s_ctx.m_allocator, _size);
 }
 
 static void memFree(void* _ptr, void* _userData)
 {
 	BX_UNUSED(_userData);
-	BX_FREE(s_ctx.m_allocator, _ptr);
+	bx::free(s_ctx.m_allocator, _ptr);
 }
 
 void imguiCreate(float _fontSize, bx::AllocatorI* _allocator)
@@ -564,8 +566,22 @@ BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunused-function"); // warning: 'int re
 BX_PRAGMA_DIAGNOSTIC_PUSH();
 BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wunknown-pragmas")
 BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wtype-limits"); // warning: comparison is always true due to limited range of data type
-#define STBTT_malloc(_size, _userData) memAlloc(_size, _userData)
-#define STBTT_free(_ptr, _userData) memFree(_ptr, _userData)
+
+#define STBTT_ifloor(_a)   int32_t(bx::floor(_a) )
+#define STBTT_iceil(_a)    int32_t(bx::ceil(_a) )
+#define STBTT_sqrt(_a)     bx::sqrt(_a)
+#define STBTT_pow(_a, _b)  bx::pow(_a, _b)
+#define STBTT_fmod(_a, _b) bx::mod(_a, _b)
+#define STBTT_cos(_a)      bx::cos(_a)
+#define STBTT_acos(_a)     bx::acos(_a)
+#define STBTT_fabs(_a)     bx::abs(_a)
+#define STBTT_strlen(_str) bx::strLen(_str)
+
+#define STBTT_memcpy(_dst, _src, _numBytes) bx::memCopy(_dst, _src, _numBytes)
+#define STBTT_memset(_dst, _ch, _numBytes)  bx::memSet(_dst, _ch, _numBytes)
+#define STBTT_malloc(_size, _userData)      memAlloc(_size, _userData)
+#define STBTT_free(_ptr, _userData)         memFree(_ptr, _userData)
+
 #define STB_RECT_PACK_IMPLEMENTATION
 #include <stb/stb_rect_pack.h>
 #define STB_TRUETYPE_IMPLEMENTATION

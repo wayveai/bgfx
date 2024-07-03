@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 Branimir Karadzic. All rights reserved.
+ * Copyright 2011-2024 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
@@ -236,7 +236,7 @@ namespace bgfx { namespace d3d12
 		{ DXGI_FORMAT_R8_SNORM,           DXGI_FORMAT_R8_SNORM,              DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN,              D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING                }, // R8S
 		{ DXGI_FORMAT_R16_UNORM,          DXGI_FORMAT_R16_UNORM,             DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN,              D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING                }, // R16
 		{ DXGI_FORMAT_R16_SINT,           DXGI_FORMAT_R16_SINT,              DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN,              D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING                }, // R16I
-		{ DXGI_FORMAT_R16_UNORM,          DXGI_FORMAT_R16_UNORM,             DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN,              D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING                }, // R16U
+		{ DXGI_FORMAT_R16_UINT,           DXGI_FORMAT_R16_UINT,              DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN,              D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING                }, // R16U
 		{ DXGI_FORMAT_R16_FLOAT,          DXGI_FORMAT_R16_FLOAT,             DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN,              D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING                }, // R16F
 		{ DXGI_FORMAT_R16_SNORM,          DXGI_FORMAT_R16_SNORM,             DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN,              D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING                }, // R16S
 		{ DXGI_FORMAT_R32_SINT,           DXGI_FORMAT_R32_SINT,              DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN,              D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING                }, // R32I
@@ -418,11 +418,14 @@ namespace bgfx { namespace d3d12
 	static const GUID IID_ID3D12Device3              = { 0x81dadc15, 0x2bad, 0x4392, { 0x93, 0xc5, 0x10, 0x13, 0x45, 0xc4, 0xaa, 0x98 } };
 	static const GUID IID_ID3D12Device4              = { 0xe865df17, 0xa9ee, 0x46f9, { 0xa4, 0x63, 0x30, 0x98, 0x31, 0x5a, 0xa2, 0xe5 } };
 	static const GUID IID_ID3D12Device5              = { 0x8b4f173b, 0x2fea, 0x4b80, { 0x8f, 0x58, 0x43, 0x07, 0x19, 0x1a, 0xb9, 0x5d } };
+	static const GUID IID_ID3D12Device6              = { 0xc70b221b, 0x40e4, 0x4a17, { 0x89, 0xaf, 0x02, 0x5a, 0x07, 0x27, 0xa6, 0xdc } };
+	static const GUID IID_ID3D12Device7              = { 0x5c014b53, 0x68a1, 0x4b9b, { 0x8b, 0xd1, 0xdd, 0x60, 0x46, 0xb9, 0x35, 0x8b } };
+	static const GUID IID_ID3D12Device8              = { 0x9218e6bb, 0xf944, 0x4f7e, { 0xa7, 0x5c, 0xb1, 0xb2, 0xc7, 0xb7, 0x01, 0xf3 } };
 	static const GUID IID_ID3D12Fence                = { 0x0a753dcf, 0xc4d8, 0x4b91, { 0xad, 0xf6, 0xbe, 0x5a, 0x60, 0xd9, 0x5a, 0x76 } };
 	static const GUID IID_ID3D12GraphicsCommandList  = { 0x5b160d0f, 0xac1b, 0x4185, { 0x8b, 0xa8, 0xb3, 0xae, 0x42, 0xa5, 0xa4, 0x55 } };
 	static const GUID IID_ID3D12GraphicsCommandList1 = { 0x553103fb, 0x1fe7, 0x4557, { 0xbb, 0x38, 0x94, 0x6d, 0x7d, 0x0e, 0x7c, 0xa7 } };
-	static const GUID IID_ID3D12GraphicsCommandList2 = { 0x38C3E585, 0xFF17, 0x412C, { 0x91, 0x50, 0x4F, 0xC6, 0xF9, 0xD7, 0x2A, 0x28 } };
-	static const GUID IID_ID3D12GraphicsCommandList3 = { 0x6FDA83A7, 0xB84C, 0x4E38, { 0x9A, 0xC8, 0xC7, 0xBD, 0x22, 0x01, 0x6B, 0x3D } };
+	static const GUID IID_ID3D12GraphicsCommandList2 = { 0x38c3e585, 0xff17, 0x412c, { 0x91, 0x50, 0x4f, 0xc6, 0xf9, 0xd7, 0x2a, 0x28 } };
+	static const GUID IID_ID3D12GraphicsCommandList3 = { 0x6fda83a7, 0xb84c, 0x4e38, { 0x9a, 0xc8, 0xc7, 0xbd, 0x22, 0x01, 0x6b, 0x3d } };
 	static const GUID IID_ID3D12GraphicsCommandList4 = { 0x8754318e, 0xd3a9, 0x4541, { 0x98, 0xcf, 0x64, 0x5b, 0x50, 0xdc, 0x48, 0x74 } };
 	static const GUID IID_ID3D12InfoQueue            = { 0x0742a90b, 0xc387, 0x483f, { 0xb9, 0x46, 0x30, 0xa7, 0xe4, 0xe6, 0x14, 0x58 } };
 	static const GUID IID_ID3D12PipelineState        = { 0x765a30f3, 0xf624, 0x4c6f, { 0xa8, 0x28, 0xac, 0xe9, 0x48, 0x62, 0x24, 0x45 } };
@@ -434,6 +437,9 @@ namespace bgfx { namespace d3d12
 
 	static const GUID s_d3dDeviceIIDs[] =
 	{
+		IID_ID3D12Device8,
+		IID_ID3D12Device7,
+		IID_ID3D12Device6,
 		IID_ID3D12Device5,
 		IID_ID3D12Device4,
 		IID_ID3D12Device3,
@@ -468,13 +474,13 @@ namespace bgfx { namespace d3d12
 
 	static inline D3D12_HEAP_PROPERTIES ID3D12DeviceGetCustomHeapProperties(ID3D12Device *device, uint32_t nodeMask, D3D12_HEAP_TYPE heapType)
 	{
-#if BX_COMPILER_MSVC
+#if BX_COMPILER_MSVC || (BX_COMPILER_CLANG && defined(_MSC_VER))
 		return device->GetCustomHeapProperties(nodeMask, heapType);
 #else
 		D3D12_HEAP_PROPERTIES ret;
 		device->GetCustomHeapProperties(&ret, nodeMask, heapType);
 		return ret;
-#endif // BX_COMPILER_MSVC
+#endif // BX_COMPILER_MSVC || (BX_COMPILER_CLANG && defined(_MSC_VER))
 	}
 
 	static void initHeapProperties(ID3D12Device* _device, D3D12_HEAP_PROPERTIES& _properties)
@@ -519,11 +525,11 @@ namespace bgfx { namespace d3d12
 			void* ptr;
 			DX_CHECK(resource->Map(0, NULL, &ptr) );
 			D3D12_RESOURCE_ALLOCATION_INFO rai;
-#if BX_COMPILER_MSVC
+#if BX_COMPILER_MSVC || (BX_COMPILER_CLANG && defined(_MSC_VER))
 			rai = _device->GetResourceAllocationInfo(1, 1, _resourceDesc);
 #else
 			_device->GetResourceAllocationInfo(&rai, 1, 1, _resourceDesc);
-#endif // BX_COMPILER_MSVC
+#endif // BX_COMPILER_MSVC || (BX_COMPILER_CLANG && defined(_MSC_VER))
 			bx::memSet(ptr, 0, size_t(rai.SizeInBytes) );
 			resource->Unmap(0, NULL);
 		}
@@ -620,35 +626,35 @@ namespace bgfx { namespace d3d12
 
 	inline D3D12_CPU_DESCRIPTOR_HANDLE getCPUHandleHeapStart(ID3D12DescriptorHeap* _heap)
 	{
-#if BX_COMPILER_MSVC
+#if BX_COMPILER_MSVC || (BX_COMPILER_CLANG && defined(_MSC_VER))
 		return _heap->GetCPUDescriptorHandleForHeapStart();
 #else
 		D3D12_CPU_DESCRIPTOR_HANDLE handle;
 		_heap->GetCPUDescriptorHandleForHeapStart(&handle);
 		return handle;
-#endif // BX_COMPILER_MSVC
+#endif // BX_COMPILER_MSVC || (BX_COMPILER_CLANG && defined(_MSC_VER))
 	}
 
 	inline D3D12_GPU_DESCRIPTOR_HANDLE getGPUHandleHeapStart(ID3D12DescriptorHeap* _heap)
 	{
-#if BX_COMPILER_MSVC
+#if BX_COMPILER_MSVC || (BX_COMPILER_CLANG && defined(_MSC_VER))
 		return _heap->GetGPUDescriptorHandleForHeapStart();
 #else
 		D3D12_GPU_DESCRIPTOR_HANDLE handle;
 		_heap->GetGPUDescriptorHandleForHeapStart(&handle);
 		return handle;
-#endif // BX_COMPILER_MSVC
+#endif // BX_COMPILER_MSVC || (BX_COMPILER_CLANG && defined(_MSC_VER))
 	}
 
 	inline D3D12_RESOURCE_DESC getResourceDesc(ID3D12Resource* _resource)
 	{
-#if BX_COMPILER_MSVC
+#if BX_COMPILER_MSVC || (BX_COMPILER_CLANG && defined(_MSC_VER))
 		return _resource->GetDesc();
 #else
 		D3D12_RESOURCE_DESC desc;
 		_resource->GetDesc(&desc);
 		return desc;
-#endif // BX_COMPILER_MSVC
+#endif // BX_COMPILER_MSVC || (BX_COMPILER_CLANG && defined(_MSC_VER))
 	}
 
 #if BGFX_CONFIG_DEBUG_ANNOTATION && (BX_PLATFORM_WINDOWS || BX_PLATFORM_WINRT)
@@ -809,6 +815,14 @@ namespace bgfx { namespace d3d12
 
 			HRESULT hr;
 
+			if (NULL != g_platformData.context)
+			{
+				m_device = (ID3D12Device*)g_platformData.context;
+
+				m_device->AddRef();
+				hr = S_OK;
+			}
+			else
 			{
 #if BX_PLATFORM_LINUX || BX_PLATFORM_WINDOWS || BX_PLATFORM_WINRT
 				if (_init.debug
@@ -830,13 +844,20 @@ namespace bgfx { namespace d3d12
 
 								if (SUCCEEDED(hr))
 								{
-//									debug1->SetEnableGPUBasedValidation(true);
-
 									// https://discordapp.com/channels/590611987420020747/593519198995742733/703642988345032804
 									// D3D12 Bug Number: 26131261
 									// There is a bug in the D3D12 validation that causes example-21 to fail when using UAV
-									// Setting this function below to false avoids the bug
-									debug1->SetEnableSynchronizedCommandQueueValidation(false);
+									// Setting SetEnableSynchronizedCommandQueueValidation below to false avoids the bug
+									// It was fixed in (probably) the first windows 11 sdk, 22000
+									// However, the fix causes any dx12 context with validation to break if this is set to false, so we can't do that anymore
+									if (windowsVersionIs(Condition::GreaterEqual, 0x0A00, 22000))
+									{
+										debug1->SetEnableGPUBasedValidation(true);
+									}
+									else
+									{
+										debug1->SetEnableSynchronizedCommandQueueValidation(false);
+									}
 								}
 
 								DX_RELEASE(debug1, 1);
@@ -850,6 +871,7 @@ namespace bgfx { namespace d3d12
 
 				D3D_FEATURE_LEVEL featureLevel[] =
 				{
+					D3D_FEATURE_LEVEL_12_2,
 					D3D_FEATURE_LEVEL_12_1,
 					D3D_FEATURE_LEVEL_12_0,
 					D3D_FEATURE_LEVEL_11_1,
@@ -904,16 +926,12 @@ namespace bgfx { namespace d3d12
 					m_device->SetDebugErrorFilterX(0x8EC9B15C, D3D12XBOX_DEBUG_FILTER_FLAG_DISABLE_OUTPUT);
 				}
 #endif // BX_PLATFORM_WINDOWS || BX_PLATFORM_WINRT
-			}
 
-			if (FAILED(hr) )
-			{
-				BX_TRACE("Init error: Unable to create Direct3D12 device.");
-				if (BX_ENABLED(BX_PLATFORM_WINRT) )
+				if (FAILED(hr) )
 				{
-					BX_TRACE("Hint: Change UWP app to game?");
+					BX_TRACE("Init error: Unable to create Direct3D12 device.");
+					goto error;
 				}
-				goto error;
 			}
 
 #if !BX_PLATFORM_LINUX
@@ -971,6 +989,146 @@ namespace bgfx { namespace d3d12
 			BX_TRACE("\tConservativeRasterizationTier %d", m_options.ConservativeRasterizationTier);
 			BX_TRACE("\tCrossNodeSharingTier %d", m_options.CrossNodeSharingTier);
 			BX_TRACE("\tResourceHeapTier %d", m_options.ResourceHeapTier);
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS1 options1; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS1, &options1, sizeof(options1)));)
+			{
+				BX_TRACE("D3D12 options 1:");
+				BX_TRACE("\tWaveOps %d", options1.WaveOps);
+				BX_TRACE("\tWaveLaneCountMin %d", options1.WaveLaneCountMin);
+				BX_TRACE("\tWaveLaneCountMax %d", options1.WaveLaneCountMax);
+				BX_TRACE("\tTotalLaneCount %d", options1.TotalLaneCount);
+				BX_TRACE("\tExpandedComputeResourceStates %d", options1.ExpandedComputeResourceStates);
+				BX_TRACE("\tInt64ShaderOps %d", options1.Int64ShaderOps);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS2 options2; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &options2, sizeof(options2)));)
+			{
+				BX_TRACE("D3D12 options 2:");
+				BX_TRACE("\tCopyQueueTimestampQueriesSupported %d", options2.DepthBoundsTestSupported);
+				BX_TRACE("\tCastingFullyTypedFormatSupported %d", options2.ProgrammableSamplePositionsTier);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS3 options3; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &options3, sizeof(options3)));)
+			{
+				BX_TRACE("D3D12 options 3:");
+				BX_TRACE("\tCopyQueueTimestampQueriesSupported %d", options3.CopyQueueTimestampQueriesSupported);
+				BX_TRACE("\tCastingFullyTypedFormatSupported %d", options3.CastingFullyTypedFormatSupported);
+				BX_TRACE("\tWriteBufferImmediateSupportFlags %d", options3.WriteBufferImmediateSupportFlags);
+				BX_TRACE("\tViewInstancingTier %d", options3.ViewInstancingTier);
+				BX_TRACE("\tBarycentricsSupported %d", options3.BarycentricsSupported);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS4 options4; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS4, &options4, sizeof(options4)));)
+			{
+				BX_TRACE("D3D12 options 4:");
+				BX_TRACE("\tMSAA64KBAlignedTextureSupported %d", options4.MSAA64KBAlignedTextureSupported);
+				BX_TRACE("\tSharedResourceCompatibilityTier %d", options4.SharedResourceCompatibilityTier);
+				BX_TRACE("\tNative16BitShaderOpsSupported %d", options4.Native16BitShaderOpsSupported);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options5, sizeof(options5) ) );)
+			{
+				BX_TRACE("D3D12 options 5:");
+				BX_TRACE("\tSRVOnlyTiledResourceTier3 %d", options5.SRVOnlyTiledResourceTier3);
+				BX_TRACE("\tRenderPassesTier %d", options5.RenderPassesTier);
+				BX_TRACE("\tRaytracingTier %d", options5.RaytracingTier);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS6 options6; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &options6, sizeof(options6)));)
+			{
+				BX_TRACE("D3D12 options 6:");
+				BX_TRACE("\tAdditionalShadingRatesSupported %d", options6.AdditionalShadingRatesSupported);
+				BX_TRACE("\tPerPrimitiveShadingRateSupportedWithViewportIndexing %d", options6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
+				BX_TRACE("\tVariableShadingRateTier %d", options6.VariableShadingRateTier);
+				BX_TRACE("\tShadingRateImageTileSize %d", options6.ShadingRateImageTileSize);
+				BX_TRACE("\tBackgroundProcessingSupported %d", options6.BackgroundProcessingSupported);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS7 options7; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &options7, sizeof(options7)));)
+			{
+				BX_TRACE("D3D12 options 7:");
+				BX_TRACE("\tMeshShaderTier %d", options7.MeshShaderTier);
+				BX_TRACE("\tSamplerFeedbackTier %d", options7.SamplerFeedbackTier);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS8 options8; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS8, &options8, sizeof(options8)));)
+			{
+				BX_TRACE("D3D12 options 8:");
+				BX_TRACE("\tUnalignedBlockTexturesSupported %d", options8.UnalignedBlockTexturesSupported);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS9 options9; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS9, &options9, sizeof(options9)));)
+			{
+				BX_TRACE("D3D12 options 9:");
+				BX_TRACE("\tMeshShaderPipelineStatsSupported %d", options9.MeshShaderPipelineStatsSupported);
+				BX_TRACE("\tMeshShaderSupportsFullRangeRenderTargetArrayIndex %d", options9.MeshShaderSupportsFullRangeRenderTargetArrayIndex);
+				BX_TRACE("\tAtomicInt64OnTypedResourceSupported %d", options9.AtomicInt64OnTypedResourceSupported);
+				BX_TRACE("\tAtomicInt64OnGroupSharedSupported %d", options9.AtomicInt64OnGroupSharedSupported);
+				BX_TRACE("\tDerivativesInMeshAndAmplificationShadersSupported %d", options9.DerivativesInMeshAndAmplificationShadersSupported);
+				BX_TRACE("\tWaveMMATier %d", options9.WaveMMATier);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS10 options10; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS10, &options10, sizeof(options10)));)
+			{
+				BX_TRACE("D3D12 options 10:");
+				BX_TRACE("\tVariableRateShadingSumCombinerSupported %d", options10.VariableRateShadingSumCombinerSupported);
+				BX_TRACE("\tMeshShaderPerPrimitiveShadingRateSupported %d", options10.MeshShaderPerPrimitiveShadingRateSupported);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS11 options11; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS11, &options11, sizeof(options11)));)
+			{
+				BX_TRACE("D3D12 options 11:");
+				BX_TRACE("\tAtomicInt64OnDescriptorHeapResourceSupported %d", options11.AtomicInt64OnDescriptorHeapResourceSupported);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS12 options12; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &options12, sizeof(options12)));)
+			{
+				BX_TRACE("D3D12 options 12:");
+				BX_TRACE("\tMSPrimitivesPipelineStatisticIncludesCulledPrimitives %d", options12.MSPrimitivesPipelineStatisticIncludesCulledPrimitives);
+				BX_TRACE("\tEnhancedBarriersSupported %d", options12.EnhancedBarriersSupported);
+				BX_TRACE("\tRelaxedFormatCastingSupported %d", options12.RelaxedFormatCastingSupported);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS13 options13; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &options13, sizeof(options13)));)
+			{
+				BX_TRACE("D3D12 options 13:");
+				BX_TRACE("\tUnrestrictedBufferTextureCopyPitchSupported %d", options13.UnrestrictedBufferTextureCopyPitchSupported);
+				BX_TRACE("\tUnrestrictedVertexElementAlignmentSupported %d", options13.UnrestrictedVertexElementAlignmentSupported);
+				BX_TRACE("\tInvertedViewportHeightFlipsYSupported %d", options13.InvertedViewportHeightFlipsYSupported);
+				BX_TRACE("\tInvertedViewportDepthFlipsZSupported %d", options13.InvertedViewportDepthFlipsZSupported);
+				BX_TRACE("\tTextureCopyBetweenDimensionsSupported %d", options13.TextureCopyBetweenDimensionsSupported);
+				BX_TRACE("\tAlphaBlendFactorSupported %d", options13.AlphaBlendFactorSupported);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS14 options14; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &options14, sizeof(options14)));)
+			{
+				BX_TRACE("D3D12 options 14:");
+				BX_TRACE("\tAdvancedTextureOpsSupported %d", options14.AdvancedTextureOpsSupported);
+				BX_TRACE("\tWriteableMSAATexturesSupported %d", options14.WriteableMSAATexturesSupported);
+				BX_TRACE("\tIndependentFrontAndBackStencilRefMaskSupported %d", options14.IndependentFrontAndBackStencilRefMaskSupported);
+				break;
+			}
+
+			for (D3D12_FEATURE_DATA_D3D12_OPTIONS15 options15; SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &options15, sizeof(options15)));)
+			{
+				BX_TRACE("D3D12 options 15:");
+				BX_TRACE("\tTriangleFanSupported %d", options15.TriangleFanSupported);
+				BX_TRACE("\tDynamicIndexBufferStripCutSupported %d", options15.DynamicIndexBufferStripCutSupported);
+				break;
+			}
 
 			initHeapProperties(m_device);
 
@@ -1139,7 +1297,7 @@ namespace bgfx { namespace d3d12
 						);
 				}
 				m_samplerAllocator.create(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER
-					, 1024
+					, 2048
 					, BGFX_CONFIG_MAX_TEXTURE_SAMPLERS
 					);
 
@@ -1214,6 +1372,7 @@ namespace bgfx { namespace d3d12
 					| BGFX_CAPS_IMAGE_RW
 					| BGFX_CAPS_VIEWPORT_LAYER_ARRAY
 					| BGFX_CAPS_DRAW_INDIRECT_COUNT
+					| BGFX_CAPS_PRIMITIVE_ID
 					);
 				g_caps.limits.maxTextureSize     = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 				g_caps.limits.maxTextureLayers   = D3D12_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
@@ -1429,24 +1588,24 @@ namespace bgfx { namespace d3d12
 			case ErrorState::CreatedCommandQueue:
 				m_device->SetPrivateDataInterface(IID_ID3D12CommandQueue, NULL);
 				m_cmd.shutdown();
-				BX_FALLTHROUGH;
+				[[fallthrough]];
 
 			case ErrorState::CreatedDXGIFactory:
 				DX_RELEASE(m_device,  0);
 #if !BX_PLATFORM_LINUX
 				m_dxgi.shutdown();
 #endif // !BX_PLATFORM_LINUX
-				BX_FALLTHROUGH;
+				[[fallthrough]];
 
 #if USE_D3D12_DYNAMIC_LIB
 			case ErrorState::LoadedDXGI:
 			case ErrorState::LoadedD3D12:
 				bx::dlclose(m_d3d12Dll);
-				BX_FALLTHROUGH;
+				[[fallthrough]];
 
 			case ErrorState::LoadedKernel32:
 				bx::dlclose(m_kernel32Dll);
-				BX_FALLTHROUGH;
+				[[fallthrough]];
 
 #endif // USE_D3D12_DYNAMIC_LIB
 			case ErrorState::Default:
@@ -1900,11 +2059,11 @@ namespace bgfx { namespace d3d12
 		{
 			if (NULL != m_uniforms[_handle.idx])
 			{
-				BX_FREE(g_allocator, m_uniforms[_handle.idx]);
+				bx::free(g_allocator, m_uniforms[_handle.idx]);
 			}
 
 			const uint32_t size = bx::alignUp(g_uniformTypeSize[_type] * _num, 16);
-			void* data = BX_ALLOC(g_allocator, size);
+			void* data = bx::alloc(g_allocator, size);
 			bx::memSet(data, 0, size);
 			m_uniforms[_handle.idx] = data;
 			m_uniformReg.add(_handle, _name);
@@ -1912,7 +2071,7 @@ namespace bgfx { namespace d3d12
 
 		void destroyUniform(UniformHandle _handle) override
 		{
-			BX_FREE(g_allocator, m_uniforms[_handle.idx]);
+			bx::free(g_allocator, m_uniforms[_handle.idx]);
 			m_uniforms[_handle.idx] = NULL;
 			m_uniformReg.remove(_handle);
 		}
@@ -2884,7 +3043,7 @@ namespace bgfx { namespace d3d12
 
 			if (cached)
 			{
-				cachedData = BX_ALLOC(g_allocator, length);
+				cachedData = bx::alloc(g_allocator, length);
 				if (g_callback->cacheRead(hash, cachedData, length) )
 				{
 					BX_TRACE("Loading cached compute PSO (size %d).", length);
@@ -2929,7 +3088,7 @@ namespace bgfx { namespace d3d12
 
 			if (NULL != cachedData)
 			{
-				BX_FREE(g_allocator, cachedData);
+				bx::free(g_allocator, cachedData);
 			}
 
 			return pso;
@@ -3165,7 +3324,7 @@ namespace bgfx { namespace d3d12
 
 			if (cached)
 			{
-				cachedData = BX_ALLOC(g_allocator, length);
+				cachedData = bx::alloc(g_allocator, length);
 				if (g_callback->cacheRead(hash, cachedData, length) )
 				{
 					BX_TRACE("Loading cached graphics PSO (size %d).", length);
@@ -3217,7 +3376,7 @@ namespace bgfx { namespace d3d12
 
 			if (NULL != cachedData)
 			{
-				BX_FREE(g_allocator, cachedData);
+				bx::free(g_allocator, cachedData);
 			}
 
 			return pso;
@@ -3328,7 +3487,7 @@ namespace bgfx { namespace d3d12
 			if (isValid(m_fbh) )
 			{
 				FrameBufferD3D12& frameBuffer = m_frameBuffers[m_fbh.idx];
-				frameBuffer.clear(m_commandList, _clear, _palette);
+				frameBuffer.clear(m_commandList, _clear, _palette, _rect, _num);
 			}
 			else
 			{
@@ -3532,7 +3691,7 @@ namespace bgfx { namespace d3d12
 		s_renderD3D12 = BX_NEW(g_allocator, RendererContextD3D12);
 		if (!s_renderD3D12->init(_init) )
 		{
-			BX_DELETE(g_allocator, s_renderD3D12);
+			bx::deleteObject(g_allocator, s_renderD3D12);
 			s_renderD3D12 = NULL;
 		}
 		return s_renderD3D12;
@@ -3541,7 +3700,7 @@ namespace bgfx { namespace d3d12
 	void rendererDestroy()
 	{
 		s_renderD3D12->shutdown();
-		BX_DELETE(g_allocator, s_renderD3D12);
+		bx::deleteObject(g_allocator, s_renderD3D12);
 		s_renderD3D12 = NULL;
 	}
 
@@ -3730,7 +3889,7 @@ namespace bgfx { namespace d3d12
 
 	void DescriptorAllocatorD3D12::create(D3D12_DESCRIPTOR_HEAP_TYPE _type, uint16_t _maxDescriptors, uint16_t _numDescriptorsPerBlock)
 	{
-		m_handleAlloc = bx::createHandleAlloc(g_allocator, _maxDescriptors);
+		m_handleAlloc = bx::createHandleAlloc(g_allocator, _maxDescriptors/_numDescriptorsPerBlock);
 		m_numDescriptorsPerBlock = _numDescriptorsPerBlock;
 
 		ID3D12Device* device = s_renderD3D12->m_device;
@@ -3761,6 +3920,7 @@ namespace bgfx { namespace d3d12
 	uint16_t DescriptorAllocatorD3D12::alloc(ID3D12Resource* _ptr, const D3D12_SHADER_RESOURCE_VIEW_DESC* _desc)
 	{
 		uint16_t idx = m_handleAlloc->alloc();
+		BX_ASSERT(bx::kInvalidHandle != idx, "DescriptorAllocatorD3D12 is out of memory.");
 
 		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = { m_cpuHandle.ptr + idx * m_incrementSize };
 
@@ -3776,6 +3936,7 @@ namespace bgfx { namespace d3d12
 	uint16_t DescriptorAllocatorD3D12::alloc(const uint32_t* _flags, uint32_t _num, const float _palette[][4])
 	{
 		uint16_t idx = m_handleAlloc->alloc();
+		BX_ASSERT(bx::kInvalidHandle != idx, "DescriptorAllocatorD3D12 is out of memory.");
 
 		ID3D12Device* device   = s_renderD3D12->m_device;
 		uint32_t maxAnisotropy = s_renderD3D12->m_maxAnisotropy;
@@ -4064,8 +4225,8 @@ namespace bgfx { namespace d3d12
 			, (void**)&m_commandSignature[DrawIndexed]
 			) );
 
-		m_cmds[Draw       ] = BX_ALLOC(g_allocator, m_maxDrawPerBatch*sizeof(DrawIndirectCommand) );
-		m_cmds[DrawIndexed] = BX_ALLOC(g_allocator, m_maxDrawPerBatch*sizeof(DrawIndexedIndirectCommand) );
+		m_cmds[Draw       ] = bx::alloc(g_allocator, m_maxDrawPerBatch*sizeof(DrawIndirectCommand) );
+		m_cmds[DrawIndexed] = bx::alloc(g_allocator, m_maxDrawPerBatch*sizeof(DrawIndexedIndirectCommand) );
 
 		uint32_t cmdSize = bx::max<uint32_t>(sizeof(DrawIndirectCommand), sizeof(DrawIndexedIndirectCommand) );
 		for (uint32_t ii = 0; ii < BX_COUNTOF(m_indirect); ++ii)
@@ -4081,8 +4242,8 @@ namespace bgfx { namespace d3d12
 
 	void BatchD3D12::destroy()
 	{
-		BX_FREE(g_allocator, m_cmds[0]);
-		BX_FREE(g_allocator, m_cmds[1]);
+		bx::free(g_allocator, m_cmds[0]);
+		bx::free(g_allocator, m_cmds[1]);
 
 		DX_RELEASE(m_commandSignature[0], 0);
 		DX_RELEASE(m_commandSignature[1], 0);
@@ -4127,18 +4288,18 @@ namespace bgfx { namespace d3d12
 
 				const uint16_t layoutIdx = !isValid(vb.m_layoutHandle) ? stream.m_layoutHandle.idx : vb.m_layoutHandle.idx;
 				const VertexLayout& layout = s_renderD3D12->m_vertexLayouts[layoutIdx];
-				uint32_t stride = layout.m_stride;
-
-				D3D12_VERTEX_BUFFER_VIEW& vbv = _vbv[numStreams];
-				vbv.BufferLocation = vb.m_gpuVA + stream.m_startVertex * stride;
-				vbv.StrideInBytes  = layout.m_stride;
-				vbv.SizeInBytes    = vb.m_size;
+				const uint32_t stride = layout.m_stride;
 
 				_outNumVertices = bx::uint32_min(UINT32_MAX == _draw.m_numVertices
 					? vb.m_size/stride
 					: _draw.m_numVertices
 					, _outNumVertices
 					);
+
+				D3D12_VERTEX_BUFFER_VIEW& vbv = _vbv[numStreams];
+				vbv.BufferLocation = vb.m_gpuVA + stream.m_startVertex * stride;
+				vbv.StrideInBytes  = stride;
+				vbv.SizeInBytes    = _outNumVertices * stride;
 			}
 		}
 
@@ -4172,7 +4333,7 @@ namespace bgfx { namespace d3d12
 				);
 
 			const VertexBufferD3D12& indirect = s_renderD3D12->m_vertexBuffers[_draw.m_indirectBuffer.idx];
-			const uint32_t numDrawIndirect = UINT16_MAX == _draw.m_numIndirect
+			const uint32_t numDrawIndirect = UINT32_MAX == _draw.m_numIndirect
 				? indirect.m_size/BGFX_CONFIG_DRAW_INDIRECT_STRIDE
 				: _draw.m_numIndirect
 				;
@@ -4873,7 +5034,7 @@ namespace bgfx { namespace d3d12
 		uint64_t requiredSize = 0;
 
 		const size_t sizeInBytes = size_t(sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(uint32_t) + sizeof(uint64_t) ) * _numSubresources;
-		D3D12_PLACED_SUBRESOURCE_FOOTPRINT* layouts = (D3D12_PLACED_SUBRESOURCE_FOOTPRINT*)BX_ALLOC(g_allocator, sizeInBytes);
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT* layouts = (D3D12_PLACED_SUBRESOURCE_FOOTPRINT*)bx::alloc(g_allocator, sizeInBytes);
 		uint64_t* rowSizesInBytes = (uint64_t*)(layouts + _numSubresources);
 		uint32_t* numRows         = (uint32_t*)(rowSizesInBytes + _numSubresources);
 
@@ -4902,7 +5063,7 @@ namespace bgfx { namespace d3d12
 			, _srcData
 			);
 
-		BX_FREE(g_allocator, layouts);
+		bx::free(g_allocator, layouts);
 
 		return result;
 	}
@@ -4989,7 +5150,7 @@ namespace bgfx { namespace d3d12
 				, swizzle ? " (swizzle BGRA8 -> RGBA8)" : ""
 				);
 
-			for (uint8_t side = 0; side < numSides; ++side)
+			for (uint16_t side = 0; side < numSides; ++side)
 			{
 				for (uint8_t lod = 0; lod < ti.numMips; ++lod)
 				{
@@ -5002,7 +5163,7 @@ namespace bgfx { namespace d3d12
 							const uint32_t slice = bx::strideAlign(bx::max<uint32_t>(mip.m_height, 4)*pitch, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
 							const uint32_t size  = slice*mip.m_depth;
 
-							uint8_t* temp = (uint8_t*)BX_ALLOC(g_allocator, size);
+							uint8_t* temp = (uint8_t*)bx::alloc(g_allocator, size);
 							bimg::imageDecodeToBgra8(
 								  g_allocator
 								, temp
@@ -5023,7 +5184,7 @@ namespace bgfx { namespace d3d12
 							const uint32_t slice = bx::strideAlign( (mip.m_height/blockInfo.blockHeight)*pitch,           D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
 							const uint32_t size  = slice*mip.m_depth;
 
-							uint8_t* temp = (uint8_t*)BX_ALLOC(g_allocator, size);
+							uint8_t* temp = (uint8_t*)bx::alloc(g_allocator, size);
 							bimg::imageCopy(temp
 									,  mip.m_height/blockInfo.blockHeight
 									, (mip.m_width /blockInfo.blockWidth )*mip.m_blockSize
@@ -5041,7 +5202,7 @@ namespace bgfx { namespace d3d12
 							const uint32_t pitch = bx::strideAlign(mip.m_width*mip.m_bpp / 8, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 							const uint32_t slice = bx::strideAlign(mip.m_height*pitch,        D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
 
-							uint8_t* temp = (uint8_t*)BX_ALLOC(g_allocator, slice*mip.m_depth);
+							uint8_t* temp = (uint8_t*)bx::alloc(g_allocator, slice*mip.m_depth);
 							bimg::imageCopy(temp
 									, mip.m_height
 									, mip.m_width*mip.m_bpp/8
@@ -5274,11 +5435,11 @@ namespace bgfx { namespace d3d12
 			if (0 != kk)
 			{
 				kk = 0;
-				for (uint8_t side = 0; side < numSides; ++side)
+				for (uint16_t side = 0; side < numSides; ++side)
 				{
 					for (uint32_t lod = 0, num = ti.numMips; lod < num; ++lod)
 					{
-						BX_FREE(g_allocator, const_cast<void*>(srd[kk].pData) );
+						bx::free(g_allocator, const_cast<void*>(srd[kk].pData) );
 						++kk;
 					}
 				}
@@ -5342,7 +5503,6 @@ namespace bgfx { namespace d3d12
 	{
 		D3D12_RESOURCE_STATES state = setState(_commandList, D3D12_RESOURCE_STATE_COPY_DEST);
 
-		const uint32_t subres = _mip + (_side * m_numMips);
 		const uint32_t bpp    = bimg::getBitsPerPixel(bimg::TextureFormat::Enum(m_textureFormat) );
 		uint32_t rectpitch    = _rect.m_width*bpp/8;
 		if (bimg::isCompressed(bimg::TextureFormat::Enum(m_textureFormat)))
@@ -5362,6 +5522,8 @@ namespace bgfx { namespace d3d12
 		box.right  = box.left + _rect.m_width;
 		box.bottom = box.top  + _rect.m_height;
 
+		uint32_t layer = 0;
+
 		if (TextureD3D12::Texture3D == m_type)
 		{
 			box.front = _z;
@@ -5369,16 +5531,19 @@ namespace bgfx { namespace d3d12
 		}
 		else
 		{
+			layer = _z * (TextureD3D12::TextureCube == m_type ? 6 : 1);
 			box.front = 0;
 			box.back  = 1;
 		}
+
+		const uint32_t subres = _mip + ((layer + _side) * m_numMips);
 
 		uint8_t* srcData = _mem->data;
 		uint8_t* temp = NULL;
 
 		if (convert)
 		{
-			temp = (uint8_t*)BX_ALLOC(g_allocator, slicepitch);
+			temp = (uint8_t*)bx::alloc(g_allocator, slicepitch);
 			bimg::imageDecodeToBgra8(g_allocator, temp, srcData, _rect.m_width, _rect.m_height, srcpitch, bimg::TextureFormat::Enum(m_requestedFormat));
 			srcData = temp;
 
@@ -5419,7 +5584,7 @@ namespace bgfx { namespace d3d12
 
 		if (NULL != temp)
 		{
-			BX_FREE(g_allocator, temp);
+			bx::free(g_allocator, temp);
 		}
 
 		D3D12_RANGE writeRange = { 0, numRows*rowPitch };
@@ -6617,7 +6782,7 @@ namespace bgfx { namespace d3d12
 					{
 						const VertexBufferD3D12& indirect = m_vertexBuffers[compute.m_indirectBuffer.idx];
 
-						uint32_t numDrawIndirect = UINT16_MAX == compute.m_numIndirect
+						uint32_t numDrawIndirect = UINT32_MAX == compute.m_numIndirect
 							? indirect.m_size/BGFX_CONFIG_DRAW_INDIRECT_STRIDE
 							: compute.m_numIndirect
 							;
@@ -6677,68 +6842,54 @@ namespace bgfx { namespace d3d12
 					}
 				}
 
-				const uint64_t newFlags = draw.m_stateFlags;
-				uint64_t changedFlags = currentState.m_stateFlags ^ draw.m_stateFlags;
-				currentState.m_stateFlags = newFlags;
-
-				if (0 != (BGFX_STATE_PT_MASK & changedFlags) )
-				{
-					primIndex = uint8_t( (newFlags&BGFX_STATE_PT_MASK)>>BGFX_STATE_PT_SHIFT);
-				}
-
-				const uint64_t newStencil = draw.m_stencil;
-				uint64_t changedStencil = (currentState.m_stencil ^ draw.m_stencil) & BGFX_STENCIL_FUNC_REF_MASK;
-				currentState.m_stencil = newStencil;
-
-				if (resetState)
-				{
-					wasCompute = false;
-
-					currentState.clear();
-					currentState.m_scissor = !draw.m_scissor;
-					changedFlags = BGFX_STATE_MASK;
-					changedStencil = packStencil(BGFX_STENCIL_MASK, BGFX_STENCIL_MASK);
-					currentState.m_stateFlags = newFlags;
-					currentState.m_stencil    = newStencil;
-
-					currentBind.clear();
-
-					commandListChanged = true;
-				}
-
-				if (commandListChanged)
-				{
-					commandListChanged = false;
-
-					m_commandList->SetGraphicsRootSignature(m_rootSignature);
-					ID3D12DescriptorHeap* heaps[] = {
-						m_samplerAllocator.getHeap(),
-						scratchBuffer.getHeap(),
-					};
-					m_commandList->SetDescriptorHeaps(BX_COUNTOF(heaps), heaps);
-
-					currentPso             = NULL;
-					currentBindHash        = 0;
-					currentSamplerStateIdx = kInvalidHandle;
-					currentProgram         = BGFX_INVALID_HANDLE;
-					currentState.clear();
-					currentState.m_scissor = !draw.m_scissor;
-					changedFlags = BGFX_STATE_MASK;
-					changedStencil = packStencil(BGFX_STENCIL_MASK, BGFX_STENCIL_MASK);
-					currentState.m_stateFlags = newFlags;
-					currentState.m_stencil    = newStencil;
-
-					currentBind.clear();
-
-					const uint64_t pt = newFlags&BGFX_STATE_PT_MASK;
-					primIndex = uint8_t(pt>>BGFX_STATE_PT_SHIFT);
-				}
-
-				bool constantsChanged = draw.m_uniformBegin < draw.m_uniformEnd;
-				rendererUpdateUniforms(this, _render->m_uniformBuffer[draw.m_uniformIdx], draw.m_uniformBegin, draw.m_uniformEnd);
-
 				if (0 != draw.m_streamMask)
 				{
+					const uint64_t newFlags = draw.m_stateFlags;
+					uint64_t changedFlags = currentState.m_stateFlags ^ draw.m_stateFlags;
+					currentState.m_stateFlags = newFlags;
+
+					if (0 != (BGFX_STATE_PT_MASK & changedFlags) )
+					{
+						primIndex = uint8_t( (newFlags&BGFX_STATE_PT_MASK)>>BGFX_STATE_PT_SHIFT);
+					}
+
+					const uint64_t newStencil = draw.m_stencil;
+					uint64_t changedStencil = (currentState.m_stencil ^ draw.m_stencil) & BGFX_STENCIL_FUNC_REF_MASK;
+					currentState.m_stencil = newStencil;
+
+					if (resetState
+					||  commandListChanged)
+					{
+						wasCompute = false;
+						commandListChanged = false;
+
+						m_commandList->SetGraphicsRootSignature(m_rootSignature);
+						ID3D12DescriptorHeap* heaps[] = {
+							m_samplerAllocator.getHeap(),
+							scratchBuffer.getHeap(),
+						};
+						m_commandList->SetDescriptorHeaps(BX_COUNTOF(heaps), heaps);
+
+						currentPso             = NULL;
+						currentBindHash        = 0;
+						currentSamplerStateIdx = kInvalidHandle;
+						currentProgram         = BGFX_INVALID_HANDLE;
+						currentState.clear();
+						currentState.m_scissor = !draw.m_scissor;
+						changedFlags = BGFX_STATE_MASK;
+						changedStencil = packStencil(BGFX_STENCIL_MASK, BGFX_STENCIL_MASK);
+						currentState.m_stateFlags = newFlags;
+						currentState.m_stencil    = newStencil;
+
+						currentBind.clear();
+
+						const uint64_t pt = newFlags&BGFX_STATE_PT_MASK;
+						primIndex = uint8_t(pt>>BGFX_STATE_PT_SHIFT);
+					}
+
+					bool constantsChanged = draw.m_uniformBegin < draw.m_uniformEnd;
+					rendererUpdateUniforms(this, _render->m_uniformBuffer[draw.m_uniformIdx], draw.m_uniformBegin, draw.m_uniformEnd);
+
 					currentState.m_streamMask             = draw.m_streamMask;
 					currentState.m_instanceDataBuffer.idx = draw.m_instanceDataBuffer.idx;
 					currentState.m_instanceDataOffset     = draw.m_instanceDataOffset;
@@ -6781,23 +6932,23 @@ namespace bgfx { namespace d3d12
 						}
 					}
 
-					ID3D12PipelineState* pso =
-						getPipelineState(state
-							, draw.m_stencil
-							, numStreams
-							, layouts
-							, key.m_program
-							, uint8_t(draw.m_instanceDataStride/16)
-							);
+					ID3D12PipelineState* pso = getPipelineState(
+						  state
+						, draw.m_stencil
+						, numStreams
+						, layouts
+						, key.m_program
+						, uint8_t(draw.m_instanceDataStride/16)
+						);
 
-					uint16_t scissor = draw.m_scissor;
-					uint32_t bindHash = bx::hash<bx::HashMurmur2A>(renderBind.m_bind, sizeof(renderBind.m_bind) );
+					const uint32_t bindHash = bx::hash<bx::HashMurmur2A>(renderBind.m_bind, sizeof(renderBind.m_bind) );
+
 					if (currentBindHash != bindHash
 					||  0 != changedStencil
 					|| (hasFactor && blendFactor != draw.m_rgba)
 					|| (0 != (BGFX_STATE_PT_MASK & changedFlags)
 					||  prim.m_topology != s_primInfo[primIndex].m_topology)
-					||  currentState.m_scissor != scissor
+					||  currentState.m_scissor != draw.m_scissor
 					||  pso != currentPso
 					||  hasOcclusionQuery)
 					{
@@ -6943,6 +7094,7 @@ namespace bgfx { namespace d3d12
 						m_commandList->IASetPrimitiveTopology(prim.m_topology);
 					}
 
+					const uint16_t scissor = draw.m_scissor;
 					if (currentState.m_scissor != scissor)
 					{
 						currentState.m_scissor = scissor;
